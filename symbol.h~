@@ -6,4 +6,6 @@ enum Symbol
   ID,
   NUM
 };
+
+
 #endif

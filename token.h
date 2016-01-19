@@ -1,6 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <fstream>
 #include <string>
 #include "symbol.h" 
 
@@ -12,12 +13,14 @@ class Token
 	private:
 	Symbol sym;
 	string value;
-	
+	string fileName;
 	
 	public:
 	
 	void setSymbol(Symbol symb);
 	Symbol getSymbol();
+	void setFile(string file);
+	string getFile();
 	
 };
 

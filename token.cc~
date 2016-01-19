@@ -6,7 +6,17 @@ void Token::setSymbol(Symbol symb)
 	sym = symb;
 }
 
-Symbol getSymbol()
+Symbol Token::getSymbol()
 {
 	return sym;
+}
+
+void Token::setFile(string file)
+{
+	fileName = file;
+}
+
+string Token::getFileStream()
+{
+	return srcFile;
 }

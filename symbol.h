@@ -3,8 +3,9 @@
 
 enum Symbol
 {
-  ID,
-  NUM
+	ID,
+	NUM,
+	END
 };
 
 
