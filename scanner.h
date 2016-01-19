@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "token.h"
-
+#include <vector>
 using namespace std;
 
 class Scanner
@@ -16,12 +16,13 @@ class Scanner
 	ifstream srcFile;
 	Token token, nextTok;
 	int lineNo;
-	int colNo;	
-	string keywords[];
+	int colNo;
+	string value;
 	public:
 	Scanner(Token tok);
 	void start();
 	Token nextToken();
+	
 		
 };
 

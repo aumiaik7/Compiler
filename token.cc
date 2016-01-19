@@ -1,5 +1,14 @@
 #include "token.h"
 
+void Token::setFile(string file)
+{
+	fileName = file;
+}
+
+string Token::getFile()
+{
+	return fileName;
+}
 
 void Token::setSymbol(Symbol symb)
 {
@@ -11,12 +20,13 @@ Symbol Token::getSymbol()
 	return sym;
 }
 
-void Token::setFile(string file)
+void Token::setValue(string val)
 {
-	fileName = file;
+	value = val;
 }
 
-string Token::getFile()
+string Token::getValue()
 {
-	return fileName;
+	return value;
 }
+

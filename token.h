@@ -19,6 +19,8 @@ class Token
 	
 	void setSymbol(Symbol symb);
 	Symbol getSymbol();
+	void setValue(string value);
+	string getValue();
 	void setFile(string file);
 	string getFile();
 	
