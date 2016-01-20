@@ -1,32 +1,19 @@
 #include "token.h"
 
-void Token::setFile(string file)
+Token::Token()
+:symbolName(NONAME), sValue(attVal(-1,string("noname")))
 {
-	fileName = file;
 }
 
-string Token::getFile()
+Token::Token(Symbol s, int v, string l )
+:symbolName(s),sValue(attVal(v,l))
 {
-	return fileName;
-}
-
-void Token::setSymbol(Symbol symb)
-{
-	sym = symb;
 }
 
 Symbol Token::getSymbol()
 {
-	return sym;
+	return symbolName;
 }
 
-void Token::setValue(string val)
-{
-	value = val;
-}
 
-string Token::getValue()
-{
-	return value;
-}
 

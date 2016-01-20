@@ -11,19 +11,22 @@ class Token
 {
 
 	private:
-	Symbol sym;
-	string value;
-	string fileName;
+	struct attVal
+	{
+		attVal(int v, string l):value(v),lexeme(l){}
+		int value;//
+		string lexeme;
+	};
+	attVal sValue;
+	Symbol symbolName;
+	
 	
 	public:
-	
-	void setSymbol(Symbol symb);
+	Token();
+	Token(Symbol sym, int val, string lex );
 	Symbol getSymbol();
-	void setValue(string value);
-	string getValue();
-	void setFile(string file);
-	string getFile();
-	
+	int getValue() {return sValue.value;};
+	string getLexeme() {return sValue.lexeme;}
 };
 
 #endif

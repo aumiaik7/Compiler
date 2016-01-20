@@ -2,13 +2,14 @@
 #include <fstream>
 #include <iterator>
 #include <cstdlib>
-#include "token.h"
 #include "scanner.h"
-
+#include "administration.h"
+#include "symboltable.h"
 
 int main(int argc, char *argv[]) {
     
 	ifstream srcFile;
+	ofstream outFile;
 	char ch;
 	
 	if(argc != 2)
@@ -17,20 +18,29 @@ int main(int argc, char *argv[]) {
 		exit(0);
 	}
 
-	
-	Token token;
-	token.setFile(argv[1]);
-	Scanner scanner(token);
-	scanner.start();  
-	
-	/*while((ch = token.srcFile.get()) != EOF)
+	srcFile.open(argv[1]);
+	if(!srcFile.is_open())
 	{
-		cout << ch;
+		cout << "Error opening Source file" << endl;
+		exit(0);
+	}
+	outFile.open("output.txt");
+	if(!outFile.is_open())
+	{
+		cout << "Error opening output file" << endl;
+		exit(0);
 	}
 	
-	srcFile.close();
+	Symboltable st;
+	//Scanner object
+	Scanner scanner(srcFile,st);
+	
+	//Administrator Object (Starts the compiler)
+	Administration compiler(srcFile, outFile, scanner);
 
-	*/
+	int status = compiler.scan();
+
+	
 		
 			
     	
