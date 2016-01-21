@@ -15,5 +15,15 @@ Symbol Token::getSymbol()
 	return symbolName;
 }
 
+int Token::getValue()
+{
+	return sValue.value;
+}
+
+string Token::getLexeme()
+{
+	return sValue.lexeme;
+}
+
 
 

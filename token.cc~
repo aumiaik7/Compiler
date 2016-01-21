@@ -9,14 +9,15 @@ Token::Token(Symbol s, int v, string l )
 :symbolName(s),sValue(attVal(v,l))
 {
 }
-void Token::setFile(string file)
-{
-	fileName = file;
-}
 
 Symbol Token::getSymbol()
 {
 	return symbolName;
+}
+
+int Token::getValue()
+{
+	return sValue.value;
 }
 
 

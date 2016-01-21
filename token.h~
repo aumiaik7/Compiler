@@ -25,8 +25,8 @@ class Token
 	Token();
 	Token(Symbol sym, int val, string lex );
 	Symbol getSymbol();
-	int getValue() {return sValue.value;};
-	string getLexeme() {return sValue.lexeme;}
+	int getValue(); {return sValue.value;};
+	string getLexeme(); {return sValue.lexeme;}
 };
 
 #endif

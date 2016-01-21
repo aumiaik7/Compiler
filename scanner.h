@@ -17,10 +17,9 @@ class Scanner
 	ifstream &srcFile;
 	Symboltable &symTablePtr;
 	char ch,laCh;//char and look-ahead char
-	//Token token, nextTok;
-	//int lineNo;
-	//int colNo;
-	//string value;
+	bool isWhitespace(char lach);
+	bool isSpecial(char lach);
+	bool isNumEnd(char lach);	
 	public:
 	//Scanner();
 	Scanner(ifstream &in,Symboltable st);

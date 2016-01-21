@@ -22,6 +22,10 @@ int Administration::scan()
 			break;
 		else if(nextTok.getSymbol() == NEWLINE)
 			NewLine();
+		else
+		{
+			cout<<"Token ID: "<<nextTok.getSymbol()<< " Value: "<<nextTok.getValue()<<" Lexeme: "<<nextTok.getLexeme(); 
+		}
 	}
 	cout<<lineNo;
 	srcFile.close();
@@ -32,9 +36,9 @@ int Administration::scan()
 void Administration::NewLine()
 {
 	lineNo++;
-	if(nextTok.getSymbol() == BADSYMBOL)
+	/*if(nextTok.getSymbol() == BADSYMBOL)
 	{
 		outFile.put("Error");
-	}
+	}*/
 }
 
