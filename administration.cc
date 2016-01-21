@@ -22,7 +22,7 @@ int Administration::scan()
 			break;
 		else if(nextTok.getSymbol() == NEWLINE)
 			NewLine();
-		else
+		else if(nextTok.getSymbol() != NONAME)
 		{
 			cout<<"Token ID: "<<nextTok.getSymbol()<< " Value: "<<nextTok.getValue()<<" Lexeme: "<<nextTok.getLexeme()<<endl; 
 		}

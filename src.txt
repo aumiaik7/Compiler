@@ -1,2 +1,9 @@
-$amra moteo raja na
-ami valo 123
+$PL Program: Linear Search
+begin
+	const n = 10;integer array A[n];
+	integer x,i; Boolean found;
+
+	proc Search
+	begin integer m;
+	i,m:=1,n;
+

@@ -33,6 +33,8 @@ Token Scanner::nextToken()
 		{
 			srcFile.get();
 		}
+		Token tk(NONAME,-1,lex);
+			return tk;
 			
 	}
 	else if (isalpha(ch))
@@ -96,11 +98,161 @@ Token Scanner::nextToken()
 			}
 
 		}while(1);
-	}	
+	}
 	else if(ch == '\n')
 	{
 		Token tk(NEWLINE,-1,"");
 		return tk;
+	}
+	else if(isSpecial(ch))
+	{
+		if(ch == '.')
+		{
+			Token tk(DOT,-1,"");
+			return tk;
+		}
+		else if(ch == ',')
+		{
+			Token tk(COMMA,-1,"");
+			return tk;
+		}
+		else if(ch == ';')
+		{
+			Token tk(SEMICOLON,-1,"");
+			return tk;
+		}
+		else if(ch == '[')
+		{
+			if(srcFile.peek() == ']')
+			{
+				srcFile.get();
+				Token tk(GC1,-1,"");
+				return tk;
+			}
+			else
+			{
+				Token tk(LEFTBRACKET,-1,"");
+				return tk;
+			}
+		}
+		else if(ch == ']')
+		{
+			Token tk(RIGHTBRACKET,-1,"");
+			return tk;
+		}
+		else if(ch == '&')
+		{
+			Token tk(AND,-1,"");
+			return tk;
+		}
+		else if(ch == '|')
+		{
+			Token tk(OR,-1,"");
+			return tk;
+		}
+		else if(ch == '~')
+		{
+			Token tk(NOT,-1,"");
+			return tk;
+		}
+		else if(ch == ']')
+		{
+			Token tk(RIGHTBRACKET,-1,"");
+			return tk;
+		}
+		else if(ch == '<')
+		{
+			if(srcFile.peek() == '=')
+			{
+				srcFile.get();
+				Token tk(LTE,-1,"");
+				return tk;
+			}
+			else
+			{
+				Token tk(LESST,-1,"");
+				return tk;
+			}
+		}
+		else if(ch == '>')
+		{
+			if(srcFile.peek() == '=')
+			{
+				srcFile.get();
+				Token tk(GTE,-1,"");
+				return tk;
+			}
+			else
+			{
+				Token tk(GREATERT,-1,"");
+				return tk;
+			}
+		}
+		else if(ch == '=')
+		{
+			Token tk(EQUAL,-1,"");
+			return tk;
+		}
+		else if(ch == '+')
+		{
+			Token tk(PLUS,-1,"");
+			return tk;
+		}	
+		else if(ch == '-')
+		{
+			if(srcFile.peek() == '>')
+			{
+				srcFile.get();
+				Token tk(GC2,-1,"");
+				return tk;
+			}
+			else
+			{
+				Token tk(MINUS,-1,"");
+				return tk;
+			}
+		}
+		else if(ch == '*')
+		{
+			Token tk(TIMES,-1,"");
+			return tk;
+		}
+		else if(ch == '/')
+		{
+			Token tk(DIV,-1,"");
+			return tk;
+		}
+		else if(ch == '\\')
+		{
+			Token tk(MOD,-1,"");
+			return tk;
+		}
+		else if(ch == '(')
+		{
+			Token tk(LEFTP,-1,"");
+			return tk;
+		}
+		else if(ch == ')')
+		{
+			Token tk(RIGHTP,-1,"");
+			return tk;
+		}
+		else if(ch == ':')
+		{
+			if(srcFile.peek() == '=')
+			{
+				srcFile.get();
+				Token tk(ASSIGN,-1,"");
+				return tk;
+			}
+			else
+			{
+				Token tk(BADSYMBOL,-1,"");
+				return tk;
+			}
+		}	
+			
+				
 	}
 	else
 		cout << ch;

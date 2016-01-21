@@ -1,3 +1,4 @@
-$amra moteo raja na
-ami valo 123
-~
+$PL Program: Linear Search
+begin
+	const n = 10:integer array A[n];
+
