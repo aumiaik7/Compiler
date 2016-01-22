@@ -4,6 +4,7 @@
 Scanner::Scanner(ifstream &in, Symboltable st)
 :srcFile(in), symTablePtr(st)
 {
+	symTablePtr.insert("if");
 }
 
 

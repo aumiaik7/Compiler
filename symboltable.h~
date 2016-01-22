@@ -2,7 +2,7 @@
 #define SYMBOLTABLE_H
 
 #include <vector>
-#include <iostream>
+#include <iostrean>
 #include "token.h"
 #include "symbol.h"
 #define SYMTABLESIZE 307

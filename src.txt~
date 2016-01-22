@@ -1,4 +1,0 @@
-$PL Program: Linear Search
-begin
-	const n = 10:integer array A[n];
-

@@ -1,9 +1,10 @@
 #include "scanner.h"
 
 //constructor
-Scanner::Scanner(ifstream &in, Symboltable st)
+Scanner::Scanner(ifstream &in, Symboltable &st)
 :srcFile(in), symTablePtr(st)
 {
+	symTablePtr.insert("if");
 }
 
 
@@ -222,7 +223,7 @@ Token Scanner::nextToken()
 			Token tk(DIV,-1,"");
 			return tk;
 		}
-		else if(ch == '\')
+		else if(ch == '\\')
 		{
 			Token tk(MOD,-1,"");
 			return tk;
