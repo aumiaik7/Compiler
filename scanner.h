@@ -24,6 +24,7 @@ class Scanner
 	//Scanner();
 	Scanner(ifstream &in,Symboltable st);
 	Token nextToken();
+	void printSymTable();
 	
 		
 };

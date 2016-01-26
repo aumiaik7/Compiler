@@ -37,6 +37,8 @@ int main(int argc, char *argv[]) {
 	//Scanner object
 	Scanner scanner(srcFile,st);
 	//Administrator Object (Starts the compiler)
+
+	
 	Administration compiler(srcFile, outFile, scanner);
 	if(argc == 3 && string(argv[2]) == "SymbolTable")
 	{

@@ -4,7 +4,7 @@
 Scanner::Scanner(ifstream &in, Symboltable st)
 :srcFile(in), symTablePtr(st)
 {
-	symTablePtr.insert("if");
+	
 }
 
 
@@ -53,8 +53,23 @@ Token Scanner::nextToken()
 			}			
 			else if(isWhitespace(laCh) || (isSpecial(laCh) && laCh != '~'))
 			{	
-				Token tk(ID,-1,lex);
-				return tk;
+				int keyOrId = symTablePtr.insert(lex);			
+				if(keyOrId == 1)
+				{
+					Token tk(ID,-1,lex);
+					return tk;
+				}
+				else if (keyOrId == 2)
+				{
+					//symbol table full 
+					Token tk;
+					return tk;
+				}
+				else
+				{
+					Token tk((Symbol)keyOrId,-1,lex);
+					return tk;
+				}	
 			}
 			
 			else
@@ -64,6 +79,7 @@ Token Scanner::nextToken()
 				{
 					srcFile.get();				
 				}
+				
 				return tk;
 			}
 			
@@ -255,8 +271,20 @@ Token Scanner::nextToken()
 			
 				
 	}
+	else if(isWhitespace(ch))
+	{
+		return tok;
+	}
+	
 	else
-		cout << ch;
+	{
+		Token tk(BADSYMBOL,-1,"");
+		while(srcFile.peek() != '\n')
+		{
+			srcFile.get();				
+		}
+		return tk;
+	}
 	
 	
 	
@@ -270,8 +298,10 @@ bool Scanner::isWhitespace(char lach)
 {
 	if(lach == ' ' || lach == '\t' || lach == '\n')
 	{	
-		if(lach == ' ' || lach == '\t')
-			srcFile.get();	
+		while(srcFile.peek() == ' ' || srcFile.peek() == '\t')
+		{
+			srcFile.get();				
+		}		
 		return true;
 	}
 	else 
@@ -295,3 +325,8 @@ bool Scanner::isNumEnd(char lach)
 	else 
 		return false;
 }
+
+void Scanner::printSymTable()
+{
+	symTablePtr.print();
+}		

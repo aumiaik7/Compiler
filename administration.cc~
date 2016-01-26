@@ -1,7 +1,7 @@
 #include "administration.h"
 
 Administration::Administration(ifstream &in, ofstream &out, Scanner &sc)
-:srcFile(in),outFile(out),scanner(sc),printSymbolTable(false)
+:srcFile(in),outFile(out),scanner(sc)
 {
 }
 

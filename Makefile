@@ -17,7 +17,7 @@ scanner.o: scanner.cc
 	$(CC) $(CFLAGS) scanner.cc
 
 symboltable.o: symboltable.cc
-	$(CC) $(CFLAGS) symboltable.cc
+	$(CC) $(CFLAGS) -std=c++11 symboltable.cc
 	
 token.o: token.cc
 	$(CC) $(CFLAGS) token.cc

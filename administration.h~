@@ -33,7 +33,7 @@ class Administration
 	public:
 	bool printSymbolTable;
 	// Set up input and output files for scanning
-	Administration(ifstream &in, ofstream &out, Scanner &sc);
+	Administration(ifstream &in, ofstream &out, Scanner &sc);//, bool prinSymtab);
 	~Administration() {}
 	// Begin a new line of input
 	void NewLine();

@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
 #include "token.h"
 #include "symbol.h"
+#define KEYWORDS 17
 #define SYMTABLESIZE 307
 
 using namespace std;
@@ -16,7 +18,8 @@ class Symboltable
 	vector<Token> htable;
 	int occupied;// number of cells occupied
 	int hashfn(string lex); // hash function
-	int posFlag;
+	int position;
+	string keywords[KEYWORDS];
 	
 	
 	public:
@@ -30,10 +33,13 @@ class Symboltable
 	// location (index); otherwise create a token of appropriate type; insert the token and
 	// return its location; modified in the later phases
 	int insert(string s);
+	void insert(Token tok);
 	// Return true if the table is full; false otherwise
 	bool full();
 	// Return the number of occupied cells (used in load factor calculartion.
 	int getOC();
+	//print symbol table
+	void print();
 };
 
 #endif
