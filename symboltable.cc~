@@ -10,7 +10,7 @@ Symboltable::Symboltable()
 	keywords[0] = "begin"; keywords[1] ="end"; keywords[2] = "const"; keywords[3] = "array"; keywords[4] ="integer";
 	keywords[5] = "Boolean"; keywords[6] ="proc"; keywords[7] = "skip"; keywords[8] = "read"; keywords[9] = "write"; 	 keywords[10] = "call"; keywords[11] = "if"; keywords[12] = "do"; keywords[13] = "fi"; keywords[14] = "od"; keywords[15] = "false"; keywords[16] = "true";
 	
-	//initiazlizinf hash table
+	
 	htable.reserve(SYMTABLESIZE);
 	for( int i = 0; i < SYMTABLESIZE; ++i )
             htable.push_back(Token(NONAME,-1,"noname"));

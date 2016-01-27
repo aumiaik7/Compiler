@@ -1,5 +1,6 @@
 #include "administration.h"
 
+//constructor
 Administration::Administration(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),printSymbolTable(false)
 {
@@ -8,18 +9,22 @@ Administration::Administration(ifstream &in, ofstream &out, Scanner &sc)
 int Administration::scan()
 {
 		
-	//initializing line no		
+	//initializing line no and error count		
 	lineNo = 1;
 	errorCount = 0;
 	//continues to scan until reaches max error or end of file
 	outFile<<"Line "<<lineNo<<":";
 	while(1)
 	{
-		//value = "";
+		//exract token from source file untill the scanner reaches end of file
 		nextTok = scanner.nextToken();
+		//stop when the symbol is ENDOFFILE 
 		if(nextTok.getSymbol() == ENDOFFILE)
+		{
+			outFile<<"<"<<nextTok.getSymbol()<< ","<<nextTok.getValue()<<","<<nextTok.getLexeme()<<"> "; 
 			break;
-		//when gets line increments the line counter
+		}
+		//increment newline counter
 		else if(nextTok.getSymbol() == NEWLINE)
 			NewLine();
 		//gets valid token
@@ -27,14 +32,17 @@ int Administration::scan()
 		{
 			outFile<<"<"<<nextTok.getSymbol()<< ","<<nextTok.getValue()<<","<<nextTok.getLexeme()<<"> "; 
 		}
+		//invalid  token		
 		else
 		{
+			//bail out condition
 			if(errorCount > MAXERRORS)
 			{
 				cout<<"Too many errors. Bailing out!!";
 				outFile<<"Too many errors. Bailed out!!";
 				exit(0);
 			}
+			//shows corresponding error message
 			switch(nextTok.getSymbol())
 			{
 				
@@ -59,6 +67,7 @@ int Administration::scan()
 			}	
 		}
 	}
+	//if user wants then shows the symbol table on terminal
 	if(printSymbolTable)	
 		scanner.printSymTable();
 	srcFile.close();
@@ -71,13 +80,10 @@ void Administration::NewLine()
 {
 	lineNo++;
 	outFile<<"\n"<<"Line "<<lineNo<<":";	
-	/*if(nextTok.getSymbol() == BADSYMBOL)
-	{
-		outFile.put("Error");
-	}*/
+	
 }
 
-//
+//checks wheather the token is valid or not. if valid then returns true
 bool Administration::validTok(Symbol sym)
 {
 	if(sym == NONAME || sym == BADNAME || sym == BADNUMERAL || sym == BADSYMBOL)

@@ -40,6 +40,7 @@ class Symboltable
 	int getOC();
 	//print symbol table
 	void print();
+	
 };
 
 #endif

@@ -7,28 +7,28 @@ Scanner::Scanner(ifstream &in, Symboltable st)
 	
 }
 
-
-
-
-
-//Gets token
+//extract tokenn
 Token Scanner::nextToken()
-{
-	
-	
+{	
+	//read a character from source file
 	ch = srcFile.get();
+	//temorary token object. returns either valid or invalid token
 	Token tok;
+	//lexeme for identifier/keywords
 	string lex = "";
+	//value for numerals
 	int value = 0;
+	//end of file
 	if(ch == EOF)
 	{
 		Token tk(ENDOFFILE,-1,"");
 		return tk;
 	}
 	
-	//this portion ignores comments in source file
+	//ignore comments in source file
 	else if(ch == '$')
-	{			
+	{	
+		//look at next character of source file without reading it		
 		laCh = srcFile.peek();		
 		while(srcFile.peek() != '\n' )
 		{

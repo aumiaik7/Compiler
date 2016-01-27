@@ -25,10 +25,11 @@ class Administration
 	int lineNo;
 	// report error only if correct line is true; prevents multiple/redundant error/line
 	bool correctline;
-	// Count the number of errors.
+	//count the number of errors.
 	int errorCount;
+	//get token from scan() function	
 	Token nextTok;
-	string value;
+	
 	
 	public:
 	bool printSymbolTable;
