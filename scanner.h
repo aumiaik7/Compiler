@@ -5,26 +5,27 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 #include "token.h"
 #include "symboltable.h"
-#include <vector>
+
 using namespace std;
 
 class Scanner
 {
 
 	private:
-	ifstream &srcFile;
-	Symboltable &symTablePtr;
+	ifstream &srcFile;//source file input stream
+	Symboltable &symTablePtr;//Symbol table object
 	char ch,laCh;//char and look-ahead char
-	bool isWhitespace(char lach);
-	bool isSpecial(char lach);
-	bool isNumEnd(char lach);	
+	bool isWhitespace(char lach);//helps to detect white spaces
+	bool isSpecial(char lach);//helps to detect special symbols
+	bool isNumEnd(char lach);//helps to detect end of numerals
+	int isValidNum(string s);//helps to detect wheather the numeral is good or bad	
 	public:
-	//Scanner();
-	Scanner(ifstream &in,Symboltable st);
-	Token nextToken();
-	void printSymTable();
+	Scanner(ifstream &in,Symboltable st);//constructor
+	Token nextToken();//token generator
+	void printSymTable();//print symbol table on terminal
 	
 		
 };

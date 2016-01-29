@@ -19,7 +19,7 @@ class Symboltable
 	int occupied;// number of cells occupied
 	int hashfn(string lex); // hash function
 	int position;
-	string keywords[KEYWORDS];
+	//string keywords[KEYWORDS];
 	
 	
 	public:
@@ -33,13 +33,14 @@ class Symboltable
 	// location (index); otherwise create a token of appropriate type; insert the token and
 	// return its location; modified in the later phases
 	int insert(string s);
-	void insert(Token tok);
+	void insert(Token tok);//this insert is used for pre loading symbol table with keywords
 	// Return true if the table is full; false otherwise
 	bool full();
 	// Return the number of occupied cells (used in load factor calculartion.
 	int getOC();
 	//print symbol table
 	void print();
+	static const string keywords[KEYWORDS]; 	
 	
 };
 

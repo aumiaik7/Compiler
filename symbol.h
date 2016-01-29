@@ -1,6 +1,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+//Symbols for tokens
 enum Symbol
 {
 	ID=256, NUMERAL, BADNUMERAL, BADNAME, //256-259 
@@ -11,7 +12,7 @@ enum Symbol
 	LTE, GTE, PLUS, MINUS, //276-279
 	TIMES, DIV, MOD,LEFTP, //280-283
 	RIGHTP, ASSIGN,	GC1,GC2, //284-287 
-	BEGIN, END, CONST, ARRAY, //288-291
+	BEGIN, END, CONST, ARRAY, //288-291  //keywords form here
 	INT, BOOL, PROC, SKIP, //292-295
 	READ, WRITE, CALL, IF, //296-299
 	DO, FI, OD, FALSE, TRUE //300-304

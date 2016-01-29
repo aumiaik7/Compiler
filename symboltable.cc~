@@ -1,16 +1,14 @@
 #include "symboltable.h"
 
+const string Symboltable::keywords[KEYWORDS] = {"begin", "end", "const", "array", "integer", "Boolean", "proc", "skip", "read", "write", "call", "if", "do", "fi", "od", "false", "true"};
 
-//const string Symboltable::keywords[20] = {"begin", "end", "const", "array", "integer", "Boolean", "proc", "skip", "read", "write", "call", "if", "do", "fi", "od", "false", "true"};
 Symboltable::Symboltable()
 :occupied(1)
 {
-	int sym = 288;
+	//Symbol for begin is 288
+	int sym = 288; 
 	
-	keywords[0] = "begin"; keywords[1] ="end"; keywords[2] = "const"; keywords[3] = "array"; keywords[4] ="integer";
-	keywords[5] = "Boolean"; keywords[6] ="proc"; keywords[7] = "skip"; keywords[8] = "read"; keywords[9] = "write"; 	 keywords[10] = "call"; keywords[11] = "if"; keywords[12] = "do"; keywords[13] = "fi"; keywords[14] = "od"; keywords[15] = "false"; keywords[16] = "true";
-	
-	
+	//initiazlizinf hash table
 	htable.reserve(SYMTABLESIZE);
 	for( int i = 0; i < SYMTABLESIZE; ++i )
             htable.push_back(Token(NONAME,-1,"noname"));
@@ -29,7 +27,7 @@ bool Symboltable::full()
 {
 	return occupied == SYMTABLESIZE;
 }
-
+//return number of occupiend cells in symbol table
 int Symboltable::getOC()
 {
 	return occupied;
@@ -63,7 +61,7 @@ int Symboltable::insert(string s)
 			tempTk = htable.at(position); 	
 				
 			
-			//263 is NONAME symbol
+			//263 is NONAME symbol so position is empty insert here
 			if(tempTk.getSymbol() == 263)
 			{	
 				
@@ -71,7 +69,6 @@ int Symboltable::insert(string s)
 				htable.at(position) = tk;
 				tk = htable.at(position);
 				occupied++;
-				//cout <<" inserted: "<<tk.getLexeme()<<" at position: "<<position<<endl<<endl;
 				return 1;	
 				
 			}
@@ -81,14 +78,11 @@ int Symboltable::insert(string s)
 							
 				int sym = tempTk.getSymbol();
 				
-				if((sym >= 288 && sym <= 304) && s == keywords[sym - 288] ) //encoding scheme for matching lexeme with keyword
+				if(sym >= 288  && s == keywords[sym - 288] ) //encoding scheme for matching lexeme with keyword
 				{
-					
 					return sym; // for keyword
-				
 				}				
 				else if( s == tempTk.getLexeme())
-
 					return 1; // same identifier already stored				
 				
 				//last position so reset
@@ -121,11 +115,9 @@ void Symboltable::insert(Token tok)
 	if(isOccupied == -1)
 	{	
 		
-		//htable.insert(htable.begin()+position, tk );
 		htable.at(position) = tk;
 		tk = htable.at(position);
 		occupied++;
-		//cout <<" inserted: "<<tok.getLexeme()<<" at position: "<<position<<endl<<endl;
 	}
 	//position is occupied finds the next empty position and insert
 	else
@@ -136,15 +128,14 @@ void Symboltable::insert(Token tok)
 						
 			Token tempTk;
 			tempTk = htable.at(position); 	
-				//cout<<tempTk.getSymbol()<<endl;
+				
 			
-			//263 is NONAME symbol
+			//263 is NONAME symbol so position is empty insert here
 			if(tempTk.getSymbol() == 263)
 			{	
 				
 				htable.at(position) = tk;
 				tk = htable.at(position);
-				//cout <<" inserted: "<<tok.getLexeme()<<" at position: "<<position<<" Symbol: "<< tok.getSymbol()<<endl<<endl;
 				occupied++;
 				break;	
 				
@@ -171,7 +162,6 @@ void Symboltable::insert(Token tok)
 int Symboltable::search(string lex)
 {
 	position = hashfn(lex);
-	//cout<<"Position for lex: "<<lex<<" is:"<<position<<endl;	
 	Token tk;
 		
 	tk = htable.at(position); 

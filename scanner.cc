@@ -7,7 +7,7 @@ Scanner::Scanner(ifstream &in, Symboltable st)
 	
 }
 
-//extract tokenn
+//token generator
 Token Scanner::nextToken()
 {	
 	//read a character from source file
@@ -29,15 +29,18 @@ Token Scanner::nextToken()
 	else if(ch == '$')
 	{	
 		//look at next character of source file without reading it		
-		laCh = srcFile.peek();		
+		laCh = srcFile.peek();	
+		//continue to read chars until the next char is new line		
 		while(srcFile.peek() != '\n' )
 		{
 			srcFile.get();
 		}
+		//NONAME token returned
 		Token tk(NONAME,-1,lex);
 			return tk;
 			
 	}
+	//finite machine for detecting identifier or keyword	
 	else if (isalpha(ch))
 	{
 		lex = ch;
@@ -45,36 +48,42 @@ Token Scanner::nextToken()
 		{	
 				
 			laCh = srcFile.peek();
+			//next char is also a valid char			
 			if(isalnum(laCh) || laCh == '_')
 			{
 				//cout << laCh;
 				lex += laCh;
 				srcFile.get();				
-			}			
+			}	
+			//vald id/keyword detected		
 			else if(isWhitespace(laCh) || (isSpecial(laCh) && laCh != '~'))
 			{	
-				int keyOrId = symTablePtr.insert(lex);			
+				//check wheather its id/keyword from symbol table
+				int keyOrId = symTablePtr.insert(lex);		
+				//it's an ID	
 				if(keyOrId == 1)
 				{
 					Token tk(ID,-1,lex);
 					return tk;
 				}
+				//symbol table full program exits
 				else if (keyOrId == 2)
 				{
-					//symbol table full 
-					Token tk;
-					return tk;
+					cout<<"Symbol table is full. Program exits"<<endl;
+					exit(0);				
 				}
+				//it's a keyword
 				else
 				{
-					Token tk((Symbol)keyOrId,-1,lex);
+					Token tk((Symbol)keyOrId,-1,"");
 					return tk;
 				}	
 			}
-			
+			//invalid identifier 
 			else
 			{
 				Token tk(BADNAME,-1,"");
+				// as error detected scanner continues to read chars untill it reaches end of line
 				while(srcFile.peek() != '\n')
 				{
 					srcFile.get();				
@@ -87,25 +96,47 @@ Token Scanner::nextToken()
 		while(1);
 			
 	}
+	//finite machine for detecting numeral
 	else if(isdigit(ch))
 	{
-		value = ch - '0';
+		
+		lex = ch;
 		do
 		{
 			laCh = srcFile.peek();
-			
+			//next char is also a valid digit
 			if(isdigit(laCh))
 			{
 				
-				value = (10*value) + (srcFile.get() - '0'); 
+				//value = (10*value) + (srcFile.get() - '0'); 
+				lex += srcFile.get();
 			}
+			//end of numeral detected
 			else if(isWhitespace(laCh) || isNumEnd(laCh))
 			{	
-				Token tk(NUMERAL,value,"");
-				return tk;
+				//check wheather the numeral is valid or not
+				value = isValidNum(lex);				
+				//valid numeral
+				if(value != -1)				
+				{
+					Token tk(NUMERAL,value,"");
+					return tk;
+				}
+				//Bad numeral
+				else
+				{
+					Token tk(BADNUMERAL,-1,"");
+					// as error detected scanner continues to read chars untill it reaches end of line
+					while(srcFile.peek() != '\n')
+					{
+						srcFile.get();				
+					}
+					return tk;		
+				}
 			}
 			else
 			{
+				//Bad numeral detected
 				Token tk(BADNUMERAL,-1,"");
 				while(srcFile.peek() != '\n')
 				{
@@ -116,11 +147,14 @@ Token Scanner::nextToken()
 
 		}while(1);
 	}
+	//new line char detected
 	else if(ch == '\n')
 	{
 		Token tk(NEWLINE,-1,"");
 		return tk;
 	}
+
+ 	//finite machine for detecting special symbols
 	else if(isSpecial(ch))
 	{
 		if(ch == '.')
@@ -138,14 +172,17 @@ Token Scanner::nextToken()
 			Token tk(SEMICOLON,-1,"");
 			return tk;
 		}
+		//either array bracket or guarded command  
 		else if(ch == '[')
 		{
+			//if next char is ']' then it's a guarded command
 			if(srcFile.peek() == ']')
 			{
 				srcFile.get();
 				Token tk(GC1,-1,"");
 				return tk;
 			}
+			//it's a left bracket for array subscript
 			else
 			{
 				Token tk(LEFTBRACKET,-1,"");
@@ -177,28 +214,34 @@ Token Scanner::nextToken()
 			Token tk(RIGHTBRACKET,-1,"");
 			return tk;
 		}
+		// less than or less than equal to detector	
 		else if(ch == '<')
 		{
+			//next char is '=' so it's a lte
 			if(srcFile.peek() == '=')
 			{
 				srcFile.get();
 				Token tk(LTE,-1,"");
 				return tk;
 			}
+			//only less than symbol
 			else
 			{
 				Token tk(LESST,-1,"");
 				return tk;
 			}
 		}
+		// greater than or greater than equal to detector	
 		else if(ch == '>')
 		{
+			//next char is '=' so it's a gte
 			if(srcFile.peek() == '=')
 			{
 				srcFile.get();
 				Token tk(GTE,-1,"");
 				return tk;
 			}
+			//only greater than symbol
 			else
 			{
 				Token tk(GREATERT,-1,"");
@@ -214,15 +257,18 @@ Token Scanner::nextToken()
 		{
 			Token tk(PLUS,-1,"");
 			return tk;
-		}	
+		}
+		//either minus or guarded command  	
 		else if(ch == '-')
 		{
+			//if next char is '>' then it's a guarded command	
 			if(srcFile.peek() == '>')
 			{
 				srcFile.get();
 				Token tk(GC2,-1,"");
 				return tk;
 			}
+			//it's a minus symbol
 			else
 			{
 				Token tk(MINUS,-1,"");
@@ -254,14 +300,17 @@ Token Scanner::nextToken()
 			Token tk(RIGHTP,-1,"");
 			return tk;
 		}
+		//check wheather the next symbol is '='
 		else if(ch == ':')
 		{
+			//if next char is '=' so it's a assignment symbol
 			if(srcFile.peek() == '=')
 			{
 				srcFile.get();
 				Token tk(ASSIGN,-1,"");
 				return tk;
 			}
+			//otherwise bad symbol
 			else
 			{
 				Token tk(BADSYMBOL,-1,"");
@@ -271,11 +320,12 @@ Token Scanner::nextToken()
 			
 				
 	}
+	//return noname 
 	else if(isWhitespace(ch))
 	{
 		return tok;
 	}
-	
+	//otherwise return bad symbol
 	else
 	{
 		Token tk(BADSYMBOL,-1,"");
@@ -294,10 +344,12 @@ Token Scanner::nextToken()
 
 
 //Supporting functions
+//helps to detect white spaces
 bool Scanner::isWhitespace(char lach)
 {
 	if(lach == ' ' || lach == '\t' || lach == '\n')
 	{	
+		//read whitespaces from file. But does not read new line because there is a seperate portion in the scanner for reading newline as it count the lines in source file
 		while(srcFile.peek() == ' ' || srcFile.peek() == '\t')
 		{
 			srcFile.get();				
@@ -307,7 +359,7 @@ bool Scanner::isWhitespace(char lach)
 	else 
 		return false;
 }
-
+//helps to detect special symbols
 bool Scanner::isSpecial(char lach)
 {
 	if(lach == '.' || lach == ',' || lach == ';' || lach == '[' || lach == ']' || lach == '&' || lach == '|'
@@ -318,6 +370,7 @@ bool Scanner::isSpecial(char lach)
 		return false;
 }
 
+//helps to detect end of numerals as end of numeral is different form end of id
 bool Scanner::isNumEnd(char lach)
 {
 	if(lach == ',' || lach == ';' || lach == ']' || lach == '<' || lach == '=' || lach == '>' || lach == '+' || lach == '-' || lach == '*' || lach == '/' || lach == '\\' || lach == ')' ||  lach == '$' )
@@ -326,7 +379,28 @@ bool Scanner::isNumEnd(char lach)
 		return false;
 }
 
+//check wheather the numeral is good or bad numeral
+int Scanner::isValidNum(string s)
+{
+	int value = 0;	
+	if(s.length() > 10)
+		return -1;
+	else
+	{
+		for(int i = 0; i < s.length(); i++)
+		{
+			value = (10*value) + (s[i] - '0'); 
+		}
+		if(value>0 && value<=2147483647)
+			return value;
+		else
+			return -1;  	
+	}
+		
+}	
+
+//show symbol table in terminal
 void Scanner::printSymTable()
 {
 	symTablePtr.print();
-}		
+}	

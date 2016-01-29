@@ -75,7 +75,7 @@ int Administration::scan()
 
 	return errorCount;
 }
-
+//new line counter
 void Administration::NewLine()
 {
 	lineNo++;
