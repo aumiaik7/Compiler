@@ -1,0 +1,44 @@
+Lexical analyzer which is also known as scanner development is the first phase of compiler design. The purpose of scanner is to prcoess stream of individual characters to tokens which will be used in the next phase of the compiler. In this project we have developed a scanner that is actually a finite state machine that continues to read input stream until it reached to the end of file and produces a list of tokens from the source file. 
+
+For builing a scanner we divided our project into 4 parts. They are as follows:
+1. Driver
+2. Administrator
+3. Scanner
+4. Hash table for storing word-tokens
+
+Brief description about the parts mentioned above is given below:
+
+1. Driver:
+   Associated file: plc.cc
+This is the parts that drives the program. It allows the user to call the scanner from command line. When user runs the executable is actually calls the main function inside plc.cc. It also show the message wheather scanning is done successfully or not afterwards.
+
+2. Administrator:
+   Associated files: administration.h, administration.cc
+This part performs the tasks that are not directly related to compiler phases. administration.h file is the header file for Administration class which consits of the declaration of the private and public variables and method. Implementation of the class is done inside administration.cc. The most important method inside Administration class in scan() method. From this method we continue to call method nextToken() of Scanner class untill we reach to the end of file or we reach maximum number of errors. In each iteration either we get a valid token or new line or an invalid token. If we get a valid token then the attributes of the token is stored in outFile. If we get a token for newline we don't store it, we simply increase the line counter which is needed for the purpose of scanner. If we get any invalid token we write the corresponding error with line number in outFile. the NewLine() and validTok(Symbol sym) method helps us to perform the task mentioned here.
+
+3. Scanner:
+   Associated files: symbol.h,token.h, token.cc, scanner.h, scanner.cc, 
+First of all we want to say something about symbol.h file. We made a list of the symbols of PL and defined the symbols as enum Symbol type in this file. The symbols defined inside symbol.h are as follows:
+	ID=256, NUMERAL, BADNUMERAL, BADNAME, //256-259 
+	BADSYMBOL, BADCHAR, NEWLINE, NONAME, //260-263
+	ENDOFFILE, DOT, COMMA, SEMICOLON, //264-267
+	LEFTBRACKET,RIGHTBRACKET, AND, OR, //268-271
+	NOT,LESST, EQUAL, GREATERT, //272-275
+	LTE, GTE, PLUS, MINUS, //276-279
+	TIMES, DIV, MOD,LEFTP, //280-283
+	RIGHTP, ASSIGN,	GC1,GC2, //284-287 
+	BEGIN, END, CONST, ARRAY, //288-291  //keywords form here
+	INT, BOOL, PROC, SKIP, //292-295
+	READ, WRITE, CALL, IF, //296-299
+	DO, FI, OD, FALSE, TRUE //300-304
+We assigned an integer number for each symbol and store this number for each symbol type instead of it's name in string. 
+Now we will discuss about the Token class. token.h file is the interface of token class and the implementation of the functions is inside token.cc. When we create any object Token class by defaul it creates a token of NONAME symbol type which can be done by it's default constructor. But if we want to create a token of any specific symbol then the constructor is executed and Symbol, value and lexeme for that token are stored. For storing value and lexeme we have a stucture named attVal in this class. The constructors are used to set attribute values for symbol and for getting the attribute values we have three getter funcions, getSymbol(), getValue() and getLexeme();
+
+The most important part of the scanner is implemented inside scanner.h and scanner.cc. scanner.h is interface of Scanner class and we implemented the methods inside scanner.cc. The main operation of scannin is done inside Token nextToken() method that we call from Administration class. The finite state machine that we mention about scanner is actually implemented inside this function. At first we read a character from file and based on the character we go to the next state of our finite state machine. The nested if else code blocks are used to implement this. We are giving here two examples how we implemented the finite machine to detect a valid or invalid token. Let us assume we have read a digit from source file. So it enter inside "else if(isdigit(ch))" code block. Inside this code vlock we continue to read digits untile we reach to a valid or invalid ending. For this purpose we just one character ahed rather than reading it from file. peek() method helps us in this purpose. When we reach to an end of a digit we check either the numeral is valid or not. If valid then we construct a token object of NUMERAL type with it's associate value (we set lexeme to empty string as lexeme is not needed here) and return it. The second example is about '<' and '<=' symbol. When our read character from file is '<' we enter inside "else if(isSpecial(ch))" which is ingeneral for all special symbols of PL and inside this code block we enter inside else "if(ch == '<')". So we have read a character now our symbol can be only '<' or '<=' so we look at the next character using peek() method. If the next character is '=' then it's a '<=' symbol we read the '=' as well from file and construct a token object of LTE (less than of equal to) type otherwise if the look ahead character is not '=' then we create a token object of LESST type. Value and lexeme are not important for special symbols so value is set to -1 and lexeme is set to empty string. We used some other helper functions which are used by nextToken() method. The printSymTable() is not anythig related to scanning. This method is used to print Symbol Table in terminal if user wants to.
+
+When we detect an error in readig a line the finite machine doesn't detect any new token other than it continues to read characters from file untill the look ahead character is a newline.
+
+4. Hash table for storing word-tokens
+   Associated files: symboltable.h, symboltable.cc
+We implemented a hashtable for storing the word-tokens. Word-tokens are either keyword or identifier. The pattern for keyword and id is same so we must seperate them from each other. This purpose is served by this part. symboltable.h is the interface for Symboltable class and the implementation is inside symboltable.cc. We have 17 keywords in PL. At the beginning of the execution of program (before starting scanning process) we preload the symbol table "htable" with keywords. htable is a hash table. We have methods for searching and inserting entries in this table. The search(string) method is used wheather a lexeme is stored or not in the htable. insert() method is used to insert a keyword or identifier object into htable. At first it checks wheather the lexeme is already stored in the htable or not. If it is already stored then it doesnot store it again other than returns 1 if it is an identifier or the Symbol if it's a keyword. We don't need to store lexeme of keyword in symbol table for comparing it with the incomin lexemes. We implemented this using a simple encoding scheme. We know that our htable is already preloaded with keywords, only Symbol enum values are stored for those in htable. So in scanning process when we get a lexeme how we can be sure whether it is an identifier or keyword? From hashfn we get an index for the lexeme. If the position is empty then the lexeme is definitely an identifier. But supposose the position is occuopied. So the lexeme can be an identifier which already declared before in   		  
+              	 	  	   

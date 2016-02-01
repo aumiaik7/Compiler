@@ -19,8 +19,11 @@ class Administration
 {
 
 	private:
+	//input stream of source file
 	ifstream &srcFile;
+	//out stream of output file	
 	ofstream &outFile;
+	//Scanner object reference
 	Scanner &scanner;
 	int lineNo;
 	// report error only if correct line is true; prevents multiple/redundant error/line
@@ -32,6 +35,7 @@ class Administration
 	
 	
 	public:
+	//flag for printing symbol table
 	bool printSymbolTable;
 	// Set up input and output files for scanning
 	Administration(ifstream &in, ofstream &out, Scanner &sc);
