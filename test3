@@ -1,16 +1,22 @@
-$PL Program: Linear Search
+$PL Program: sample
 begin
-	const n = 2147483647;integer array A[n];
-	integer x,i; Boolean found;
+	const z = 3147483647;integer array A[z];
+	integer z,j,J; Boolean found;
 
-	proc Search
+proc Search
 	begin integer m;
-	i,m:=1,n;
+i,m:=1,n;
+	
+
 	do i<m ->
+
 		if A[i] = x->m:=i;[]
 			~(A[i] = x)->i:=i+1;
 		
 		fi;
 	od;
+
+
+
 	found := A[i] = x;
 end;	

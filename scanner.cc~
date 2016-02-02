@@ -391,7 +391,7 @@ int Scanner::isValidNum(string s)
 		{
 			value = (10*value) + (s[i] - '0'); 
 		}
-		if(value>=0 && value<=2147483647)
+		if(value>0 && value<=2147483647)
 			return value;
 		else
 			return -1;  	
