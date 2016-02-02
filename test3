@@ -19,4 +19,4 @@ i,m:=1,n;
 
 
 	found := A[i] = x;
-end;	
+end.

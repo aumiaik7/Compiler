@@ -1,13 +1,24 @@
-$Input Table:
-	i := 1;
-	do~(i>n)->read A[i];i:=i+1;od;
-	$Test Search:
-	read x;
-	do~(x = 0)->
-		call Search;
-		if found->write x,i;[]
-		~found->write x;
-		fi;
-		read x;
-	od;
+$Error Testing
+begin
+
+integer a^aaa,b;
+a^aaa := 1;
+b:= 3147483647;
+
+$constant initialization
+const y := 10.2;
+const n = 6;
+
+^ 
+integer fig = @@@;
+integer array A[n];
+integer i;
+
+i:=1;
+do~(i>n) read A[i];
+i:=i+1;
+od;
+
+	
+
 end.

@@ -54,9 +54,9 @@ int main(int argc, char *argv[]) {
 	int status = compiler.scan();
 
 	if(status == 0)
-		cout<<"Successfully sccaned. Token stored in outFile"<<endl;
+		cout<<"\n<<<Scanning Result>>>\nSuccessfully sccaned. Token stored in outFile"<<endl;
 	else
-		cout<<"Error occured. Check outFile file"<<endl;
+		cout<<"\n<<<Scanning Result>>>\nError occured. Check outFile"<<endl;
 
 				
     	

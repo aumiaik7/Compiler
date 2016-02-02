@@ -18,9 +18,8 @@ class Symboltable
 	vector<Token> htable;
 	int occupied;// number of cells occupied
 	int hashfn(string lex); // hash function
-	int position;
-	//string keywords[KEYWORDS];
-	
+	int position;//position got from hashfn
+		
 	
 	public:
 	// create a table with SYMTABLESIZE 307 entries.

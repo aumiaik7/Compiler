@@ -1,6 +1,6 @@
 $PL Program: Linear Search
 begin
-	const n = 2147483647;integer array A[n];
+	const n = 10;integer array A[n];
 	integer x,i; Boolean found;
 
 	proc Search
@@ -14,3 +14,18 @@ begin
 	od;
 	found := A[i] = x;
 end;	
+
+$Input Table:
+	i := 1;
+	do~(i>n)->read A[i];i:=i+1;od;
+	$Test Search:
+	read x;
+	do~(x = 0)->
+		call Search;
+		if found->write x,i;[]
+		~found->write x;
+		fi;
+		read x;
+	od;
+end.
+

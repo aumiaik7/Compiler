@@ -48,7 +48,6 @@ int Symboltable::insert(string s)
 		htable.at(position) = tk;
 		tk = htable.at(position);
 		occupied++;
-		//cout <<" inserted: "<<tk.getLexeme()<<" at position: "<<position<<endl<<endl;	
 		return 1;			
 	}
 	//position is occupied finds the next empty position and insert
@@ -196,7 +195,7 @@ void Symboltable::print()
 	{
 		Token tempTk;
 		tempTk = htable.at(i); 	
-				//cout<<tempTk.getSymbol()<<endl;
+				
 		//263 is NONAME symbol
 		if(tempTk.getSymbol() != 263)
 		{

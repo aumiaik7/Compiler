@@ -36,10 +36,12 @@ int Administration::scan()
 		else
 		{
 			//bail out condition
-			if(errorCount > MAXERRORS)
+			if(errorCount >= MAXERRORS)
 			{
-				cout<<"Too many errors. Bailing out!!";
+				cout<<"Too many errors. Bailing out!!\n";
 				outFile<<"Too many errors. Bailed out!!";
+				srcFile.close();
+				outFile.close();
 				exit(0);
 			}
 			//shows corresponding error message
