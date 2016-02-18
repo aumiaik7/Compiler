@@ -23,11 +23,36 @@ class Firstfollow
 	
 	public:
 	//functions for checking wheather the look ahead token is in first of any non terminal 
+	//First of Definition	
 	bool firstOfDefinition(Symbol sym);
+	//First of ConstantDefinition
 	bool firstOfConstDef(Symbol sym);
+	//First of VariableDefinition
 	bool firstOfVariDef(Symbol sym); 
+	//First of ProcedureDefinition	
 	bool firstOfProcDef(Symbol sym); 
+	//First of VariableList	
 	bool firstOfVariList(Symbol sym); 
+	//First of Statement	
+	bool firstOfStatement(Symbol sym);
+	//First of EmptyStatement	
+	bool firstOfEmptySt(Symbol sym);
+	//First of WriteStatement
+	//bool firstOfWriteSt(Symbol sym);
+	//First of WriteStatement
+	bool firstOfProcSt(Symbol sym);
+	//First of AssignmentStatement
+	bool firstOfAssignSt(Symbol sym);
+	//First of VariableAccessList
+	bool firstOfVAList(Symbol sym);	
+	//First of IndexSelector
+	bool firstOfIndexSel(Symbol sym);	
+
+
+	//functions for checking wheather the look ahead token is in follow of any non terminal 
+	bool followOfDefPart(Symbol sym);
+	bool followOfStatePart(Symbol sym);
+		
 		
 		
 };

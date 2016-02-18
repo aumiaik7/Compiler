@@ -59,7 +59,6 @@ class Parser
 	
 	void statement();
 	void variableAccessList();
-	void variableAccess();
 
 	void constant();
 	bool match(Symbol);

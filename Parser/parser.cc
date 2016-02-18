@@ -22,9 +22,32 @@ void Parser::block()
 	//cout<<"Matched begin"<<endl;		
 	match(BEGIN);	
 
-	cout<<"Call defPart()"<<endl;
-	definitionPart();
-	//cout<<"Matched end"<<endl;
+	lookAheadToken();
+	if(ff.firstOfDefinition(nextTok.getSymbol()))
+	{	
+		cout<<"Call definitionPart()"<<endl;
+		definitionPart();
+	
+		cout<<"Call statementPart()"<<endl;
+		statementPart();
+	
+	}
+	else if(ff.followOfDefPart(nextTok.getSymbol()))
+	{
+		
+		statementPart();
+		/*if(ff.firstOfStatement(nextTok.getSymbol()))		
+		{
+			cout<<"Call statementPart()"<<endl;
+			statementPart();
+		}
+		*/
+		//do nothing
+	}
+	else
+	{
+		//error message
+	}
 	match(END);
 	
 }
@@ -43,6 +66,7 @@ void Parser::definitionPart()
 		match(SEMICOLON);	
 		definitionPart();
 	}
+	
 	/*else if(ff.followOfDefPart())
 	{
 		//do Nothing	
@@ -71,18 +95,7 @@ void Parser::definition()
 	}
 }
 
-void Parser::statementPart()
-{
-	
-	lookAheadToken();	
-	if(ff.firstOfDefinition(nextTok.getSymbol()))
-	{
-		cout<<"Call statement()"<<endl;
-		definition();
-		match(SEMICOLON);	
-		definitionPart();
-	}
-}
+
 
 
 
@@ -110,9 +123,8 @@ void Parser::variableDefinition()
 		cout<<"Call varableList()"<<endl;		
 		variableList();
 	}
-	else if(nextTok.getSymbol() == ARRAY)
+	else if(match(ARRAY))
 	{
-		match(ARRAY);
 		cout<<"Call varableList()"<<endl;		
 		variableList();
 		match(LEFTBRACKET);
@@ -141,12 +153,87 @@ void Parser::typeSymbol()
 void Parser::variableList()
 {
 	match(ID);
-	lookAheadToken();
-	if(nextTok.getSymbol()==COMMA)
+	//lookAheadToken();
+	if(match(COMMA))
 	{
-		match(COMMA);
 		cout<<"Call varableList()"<<endl;
 		variableList();
+	}
+	else
+	{
+		cout<<"Ignore"<<endl;
+	}
+	
+}
+
+void Parser::statementPart()
+{
+	
+	lookAheadToken();	
+	if(ff.firstOfStatement(nextTok.getSymbol()))
+	{
+		cout<<"Call statement()"<<endl;
+		statement();
+		match(SEMICOLON);
+		//cout<<"Hola "<<nextTok.getSymbol()<<endl;	
+		statementPart();
+	}
+	else if(ff.followOfStatePart(nextTok.getSymbol()))
+	{
+		//do nothing
+		cout<<"statementPart() called but 0 statement found"<<endl;
+	}
+	else
+	{
+		// error message
+	}
+}
+
+void Parser::statement()
+{
+	lookAheadToken();	
+	if(ff.firstOfEmptySt(nextTok.getSymbol()))
+	{
+		match(SKIP);
+	}
+	else if(ff.firstOfProcSt(nextTok.getSymbol()))
+	{
+		match(CALL);
+		match(ID);
+	}
+	else if(ff.firstOfAssignSt(nextTok.getSymbol()))
+	{
+		cout<<"call variableAccessList()"<<endl;
+		variableAccessList();
+	}
+}
+
+void Parser::variableAccessList()
+{
+	cout<<"call variableAccess()"<<endl;
+	variableAccess();
+	if(match(COMMA))
+	{
+		cout<<"Call variableAccessList()"<<endl;
+		variableAccessList();
+	}
+	else
+	{
+		cout<<"Ignore "<<endl;
+	}
+	
+	
+}
+
+void Parser::variableAccess()
+{
+	match(ID);
+	lookAheadToken();
+	if(ff.firstOfIndexSel(nextTok.getSymbol()))
+	{
+		match(LEFTBRACKET);
+		expression();
+		match(RIGHTBRACKET);
 	}
 }
 
@@ -205,7 +292,7 @@ bool Parser::match(Symbol sym)
 	
 	else
 	{
-		cout<<nextTok.getSymbol()<<" Symbol:"<<nextTok.getLexeme() <<"  Error Message"<<endl;
+		cout<<"Want to match "<<nextTok.getSymbol()<<" Symbol:"<<nextTok.getLexeme() <<" But got "<<sym<<"  Error Message"<<endl;
 		//this means a token is not matched a lookahead token is grabbed		
 		islookAheadTok = true;
 		//cout<<<<endl;

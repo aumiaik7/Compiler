@@ -1,10 +1,9 @@
 begin
 	const a = 10;
 	const b = 20;
-	integer c,d,e; 
+	integer array A[n];
 
-	proc Search
-	begin
-		integer g;
-	end;
+	
+
+	
 end.

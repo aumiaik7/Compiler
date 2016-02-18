@@ -6,5 +6,9 @@ begin
 	proc Search
 	begin
 		integer g;
+		
 	end;
+	skip;
+		call a;
+	a[ ];
 end.
