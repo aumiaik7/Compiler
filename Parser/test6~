@@ -1,0 +1,10 @@
+begin
+	const a = 10;
+	const b = 20;
+	integer c,d,e; 
+
+	proc Search
+	begin
+		integer g;
+	end;
+end.

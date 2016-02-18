@@ -1,0 +1,16 @@
+->Name of the files included:
+Makefile, readme, technicalDoc
+Source code: administration.cc, administration.h, plc.cc, scanner.cc, scanner.h, symbol.h, symboltable.cc, symboltable.h, token.cc, token.h
+Test files: test1,test2,test3,test4 and test5. Some errors implanted intentionally in test2, test3 and test5 files
+Output file: outFile
+
+->How to compile and run this project:
+-make 				(for compiling the code)
+-make clean 			(for cleaning the *.o files and executable file)
+-scanner name_of_a_test_file 	(For running the code in some unix distribution ./ is needed before the executable)
+-scanner name_of_a_test_file SymbolTable 
+				(if "SymbolTable"(case sensitive) is provided in argument the Symbol Table (hash Table) will be shown in terminal)
+
+->The  code is free from compile-time and runtime-errors
+
+->Approximate time spent on this assignment: 20-22 hours
