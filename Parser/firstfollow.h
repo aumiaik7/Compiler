@@ -37,8 +37,10 @@ class Firstfollow
 	bool firstOfStatement(Symbol sym);
 	//First of EmptyStatement	
 	bool firstOfEmptySt(Symbol sym);
+	//First of ReadStatement	
+	bool firstOfReadSt(Symbol sym);
 	//First of WriteStatement
-	//bool firstOfWriteSt(Symbol sym);
+	bool firstOfWriteSt(Symbol sym);
 	//First of WriteStatement
 	bool firstOfProcSt(Symbol sym);
 	//First of AssignmentStatement
@@ -46,7 +48,29 @@ class Firstfollow
 	//First of VariableAccessList
 	bool firstOfVAList(Symbol sym);	
 	//First of IndexSelector
-	bool firstOfIndexSel(Symbol sym);	
+	bool firstOfIndexSel(Symbol sym);
+	//First of PrimaryOperator
+	bool firstOfPrimOp(Symbol sym);
+	//First of Term
+	bool firstOfTerm(Symbol sym);
+	//First of Factor
+	bool firstOfFactor(Symbol sym);
+	//First of Constant
+	bool firstOfConstant(Symbol sym);
+	//First of RelationalOperator
+	bool firstOfRelOp(Symbol sym);
+	//First of MultiplyingOperator
+	bool firstOfMultOp(Symbol sym);
+	//First of AddingOperator
+	bool firstOfAddOp(Symbol sym);
+
+
+
+
+	
+
+
+		
 
 
 	//functions for checking wheather the look ahead token is in follow of any non terminal 

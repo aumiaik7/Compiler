@@ -196,6 +196,16 @@ void Parser::statement()
 	{
 		match(SKIP);
 	}
+	else if(ff.firstOfReadSt(nextTok.getSymbol()))
+	{
+		cout<<"call readStatement()"<<endl;
+		readStatement();
+	}
+	else if(ff.firstOfWriteSt(nextTok.getSymbol()))
+	{
+		cout<<"call writeStatement()"<<endl;
+		writeStatement();
+	}
 	else if(ff.firstOfProcSt(nextTok.getSymbol()))
 	{
 		match(CALL);
@@ -203,8 +213,50 @@ void Parser::statement()
 	}
 	else if(ff.firstOfAssignSt(nextTok.getSymbol()))
 	{
-		cout<<"call variableAccessList()"<<endl;
-		variableAccessList();
+		cout<<"call assignmentStatement()"<<endl;
+		assignmentStatement();
+	}
+	else
+	{
+		//error message	
+	}
+}
+
+void Parser::readStatement()
+{
+	match(READ);
+	variableAccessList();
+	
+		
+}
+
+void Parser::writeStatement()
+{
+	match(WRITE);
+	expressionList();
+	
+		
+}
+void Parser::assignmentStatement()
+{
+	cout<<"call variableAccessList()"<<endl;
+	variableAccessList();
+	match(ASSIGN);
+	expressionList();
+}
+
+void Parser::expressionList()
+{
+	cout<<"call expression()"<<endl;
+	expression();
+	if(match(COMMA))
+	{
+		cout<<"Call expressionList()"<<endl;
+		expressionList();
+	}
+	else
+	{
+		cout<<"Ignore "<<endl;
 	}
 }
 
@@ -232,8 +284,152 @@ void Parser::variableAccess()
 	if(ff.firstOfIndexSel(nextTok.getSymbol()))
 	{
 		match(LEFTBRACKET);
+		cout<<"Call expression()"<<endl;		
 		expression();
 		match(RIGHTBRACKET);
+	}
+}
+
+void Parser::expression()
+{
+	cout<<"Call primaryExpression()"<<endl;	
+	primaryExpression();
+	
+	lookAheadToken();
+	if(ff.firstOfPrimOp(nextTok.getSymbol()))
+	{
+		cout<<"Call primaryOperator()"<<endl;
+		primaryOperator();
+		cout<<"Call primaryExpression()"<<endl;
+		expression();
+				
+	}
+	
+}
+
+void Parser::primaryExpression()
+{
+
+	cout<<"Call simpleExpression()"<<endl;	
+	simpleExpression();
+	
+	lookAheadToken();
+	if(ff.firstOfRelOp(nextTok.getSymbol()))
+	{
+		relationalOperator();
+		primaryExpression();
+	}
+}	
+
+void Parser::relationalOperator()
+{
+	if(match(LESST) || match(EQUAL) || match(GREATERT) || match(LTE) || match(GTE))
+	{
+		cout<<"Ignore"<<endl;	
+	}
+	else
+	{
+		cout<<"Error msg"<< endl;
+	}
+}
+
+void Parser::simpleExpression()
+{
+	lookAheadToken();
+	if(!ff.firstOfTerm(nextTok.getSymbol()))
+	{
+		match(MINUS);	
+	}
+	term();
+	lookAheadToken();	
+	if(ff.firstOfAddOp(nextTok.getSymbol()))
+	{
+		addopTerm();
+				
+	}
+	
+}
+
+void Parser::addopTerm()
+{
+	lookAheadToken();
+	if(ff.firstOfTerm(nextTok.getSymbol()))
+	{
+		addingOperator();		
+		term();
+		addopTerm();
+	}
+	
+}
+
+void Parser::addingOperator()
+{
+	if(match(PLUS) || match(MINUS))
+	{
+		cout<<"Ignore"<<endl;	
+	}
+	else
+	{
+		cout<<"Error msg"<< endl;
+	}
+}
+
+void Parser::term()
+{
+	factor();
+	lookAheadToken();
+	if(ff.firstOfMultOp(nextTok.getSymbol()))
+	{
+		multiplyingOperator();
+		term();
+	}
+}
+
+void Parser::factor()
+{
+	lookAheadToken();
+	if(ff.firstOfConstant(nextTok.getSymbol()))
+	{
+		constant();	
+	}
+	else if(nextTok.getSymbol() == ID)
+	{
+		variableAccess();	
+	}
+	else if(nextTok.getSymbol() == LEFTP)
+	{
+		match(LEFTP);
+		expression();	
+		match(RIGHTP);
+	}
+	else if(nextTok.getSymbol() == NOT)
+	{
+		factor();	
+	}
+		
+}
+
+void Parser::multiplyingOperator()
+{
+	if(match(TIMES) || match(DIV) || match(MOD))
+	{
+		cout<<"Ignore"<<endl;	
+	}
+	else
+	{
+		cout<<"Error msg"<< endl;
+	}
+}
+
+void Parser::primaryOperator()
+{
+	if(match(AND) || match(OR))
+	{
+		cout<<"Ignore"<<endl;
+	}
+	else
+	{
+		//error message
 	}
 }
 

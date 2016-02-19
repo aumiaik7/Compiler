@@ -55,19 +55,27 @@ bool Firstfollow::firstOfVariList(Symbol sym)
 bool Firstfollow::firstOfStatement(Symbol sym)
 {
 	bool inEmptySt = firstOfEmptySt(sym);
-	//bool inReadSt = firstOfReadSt(sym);
-	//bool inWriteSt = firstOfWriteSt(sym);
-	//bool inAssignSt = firstOfAssignSt(sym);
+	bool inReadSt = firstOfReadSt(sym);
+	bool inWriteSt = firstOfWriteSt(sym);
+	bool inAssignSt = firstOfAssignSt(sym);
 	bool inProcSt = firstOfProcSt(sym);
 	//bool inIfSt = firstOfIfSt(sym);
 	//bool inDoSt = firstOfDoSt(sym);
 	
-	return  inEmptySt || inProcSt ;		
+	return  inEmptySt || inAssignSt || inProcSt ;		
 	
 }
 bool Firstfollow::firstOfEmptySt(Symbol sym)
 {
 	if(sym == SKIP)
+		return true;
+	else
+		return false;		
+}
+
+bool Firstfollow::firstOfReadSt(Symbol sym)
+{
+	if(sym == READ)
 		return true;
 	else
 		return false;		
@@ -101,6 +109,72 @@ bool Firstfollow::firstOfIndexSel(Symbol sym)
 		return true;
 	else
 		return false;	
+}
+
+bool Firstfollow::firstOfPrimOp(Symbol sym)
+{
+	if(sym == AND || sym == OR)
+		return true;
+	else
+		return false;	
+}
+
+bool Firstfollow::firstOfTerm(Symbol sym)
+{
+	bool inFactor = firstOfFactor(sym);
+	
+	return inFactor;
+}
+
+bool Firstfollow::firstOfFactor(Symbol sym)
+{
+	bool isName = false;
+	bool inConst = firstOfConstant(sym);
+	bool isLeftp = false;
+	bool isTilt = false;
+	if(sym == ID)
+		isName = true;
+	else if(sym == LEFTP)
+		isLeftp = true;
+	else if(sym == NOT)
+		isTilt = true;
+
+	return isName || inConst || isLeftp || isTilt;
+
+	
+}
+
+
+bool Firstfollow::firstOfConstant(Symbol sym)
+{
+	if(sym == NUMERAL || sym == TRUE || sym == FALSE || sym == ID)
+		return true;
+	else
+		return false;
+}
+
+bool Firstfollow::firstOfRelOp(Symbol sym)
+{
+	if(sym == LESST || sym == EQUAL || sym == GREATERT || sym == LTE || sym == GTE)
+		return true;
+	else
+		return false;
+}
+
+bool Firstfollow::firstOfMultOp(Symbol sym)
+{
+	if(sym == TIMES || sym == DIV || sym == MOD)
+		return true;
+	else
+		return false;
+}
+
+bool Firstfollow::firstOfAddOp(Symbol sym)
+{
+	if(sym == PLUS || sym == MINUS)
+		return true;
+	else
+		return false;
 }
 
 //follow

@@ -58,8 +58,23 @@ class Parser
 	void variableList();
 	
 	void statement();
+	void readStatement();
+	void writeStatement();
+	void assignmentStatement();
+	void expressionList();
 	void variableAccessList();
 	void variableAccess();
+	void expression();
+	void primaryExpression();
+	void relationalOperator();
+	void primaryOperator();
+	void simpleExpression();
+	void term();
+	void addopTerm();
+	void addingOperator();
+	void multiplyingOperator();
+	void factor();
+	
 
 	void constant();
 	bool match(Symbol);
