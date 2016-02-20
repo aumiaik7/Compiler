@@ -59,7 +59,11 @@ class Parser
 	
 	void statement();
 	void readStatement();
+	void writeStatement();
 	void assignmentStatement();
+	void ifStatement();
+	void guardedCommandList();
+	void guardedCommand();
 	void expressionList();
 	void variableAccessList();
 	void variableAccess();

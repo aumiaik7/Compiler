@@ -1,9 +1,11 @@
 begin
-	const a = 10;
-	const b = 20;
-	integer array A[n];
-
 	
-
-	
+	$do ~(i>n)->read A[i];i:=i+1;od;
+	do ~(x = 0)->
+		call Search;
+		if found->write x,i;[]
+		~found->write x;
+		fi;
+		read x;
+	od;
 end.

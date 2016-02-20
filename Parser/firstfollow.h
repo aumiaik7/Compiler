@@ -32,7 +32,9 @@ class Firstfollow
 	//First of ProcedureDefinition	
 	bool firstOfProcDef(Symbol sym); 
 	//First of VariableList	
-	bool firstOfVariList(Symbol sym); 
+	bool firstOfVariList(Symbol sym);
+	//First of StatementPart	
+	bool firstOfStatePart(Symbol sym); 
 	//First of Statement	
 	bool firstOfStatement(Symbol sym);
 	//First of EmptyStatement	
@@ -63,6 +65,13 @@ class Firstfollow
 	bool firstOfMultOp(Symbol sym);
 	//First of AddingOperator
 	bool firstOfAddOp(Symbol sym);
+	//First of IfStatement
+	bool firstOfIfSt(Symbol sym);
+	//First of DoStatement
+	bool firstOfDoSt(Symbol sym);
+
+	
+
 
 
 

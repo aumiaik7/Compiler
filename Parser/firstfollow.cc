@@ -52,6 +52,10 @@ bool Firstfollow::firstOfVariList(Symbol sym)
 }
 
 
+bool Firstfollow::firstOfStatePart(Symbol sym)
+{
+	
+}
 bool Firstfollow::firstOfStatement(Symbol sym)
 {
 	bool inEmptySt = firstOfEmptySt(sym);
@@ -59,10 +63,11 @@ bool Firstfollow::firstOfStatement(Symbol sym)
 	bool inWriteSt = firstOfWriteSt(sym);
 	bool inAssignSt = firstOfAssignSt(sym);
 	bool inProcSt = firstOfProcSt(sym);
-	//bool inIfSt = firstOfIfSt(sym);
-	//bool inDoSt = firstOfDoSt(sym);
+	bool inIfSt = firstOfIfSt(sym);
+	bool inDoSt = firstOfDoSt(sym);
 	
-	return  inEmptySt || inAssignSt || inProcSt ;		
+	
+	return  inEmptySt || inReadSt || inWriteSt || inAssignSt || inProcSt || inIfSt || inDoSt ;		
 	
 }
 bool Firstfollow::firstOfEmptySt(Symbol sym)
@@ -72,6 +77,7 @@ bool Firstfollow::firstOfEmptySt(Symbol sym)
 	else
 		return false;		
 }
+
 
 bool Firstfollow::firstOfReadSt(Symbol sym)
 {
@@ -101,6 +107,22 @@ bool Firstfollow::firstOfAssignSt(Symbol sym)
 	bool inVAList = firstOfVAList(sym);
 	
 	return 	inVAList;
+}
+
+bool Firstfollow::firstOfIfSt(Symbol sym)
+{
+	if(sym == IF)
+		return true;
+	else
+		return false;
+}
+
+bool Firstfollow::firstOfDoSt(Symbol sym)
+{
+	if(sym == DO)
+		return true;
+	else
+		return false;	
 }
 
 bool Firstfollow::firstOfVAList(Symbol sym)
@@ -184,6 +206,9 @@ bool Firstfollow::firstOfAddOp(Symbol sym)
 	else
 		return false;
 }
+
+
+
 
 //follow
 bool Firstfollow::followOfDefPart(Symbol sym)

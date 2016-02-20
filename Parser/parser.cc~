@@ -216,15 +216,67 @@ void Parser::statement()
 		cout<<"call assignmentStatement()"<<endl;
 		assignmentStatement();
 	}
+	else if(ff.firstOfIfSt(nextTok.getSymbol()))
+	{
+		cout<<"call ifStatement()"<<endl;
+		ifStatement();		
+	}
+	else if(ff.firstOfDoSt(nextTok.getSymbol()))
+	{
+		cout<<"call doStatement()"<<endl;
+		doStatement();		
+	}
 	else
 	{
 		//error message	
 	}
 }
 
+void Parser::doStatement()
+{
+	match(DO);
+	cout<<"call guardedCommandList()"<<endl;
+	guardedCommandList();
+	match(OD);
+}
+
+void Parser::ifStatement()
+{
+	match(IF);
+	cout<<"call guardedCommandList()"<<endl;
+	guardedCommandList();
+	match(FI);
+	
+}
+
+void Parser::guardedCommandList()
+{
+	cout<<"call guardedCommand()"<<endl;
+	guardedCommand();
+	lookAheadToken();
+	if(nextTok.getSymbol() == GC1)
+	{
+		match(GC1);
+		cout<<"call guardedCommandList()"<<endl;
+		guardedCommandList();
+	}
+}
+
+void Parser::guardedCommand()
+{
+	cout<<"call expression()"<<endl;
+	expression();
+	match(GC2);
+	lookAheadToken();
+	cout<<"call statementPart()"<<endl;
+	statementPart();
+}
+
+
 void Parser::readStatement()
 {
 	match(READ);
+	cout<<"call variableAccessList()"<<endl;
 	variableAccessList();
 	
 		
@@ -233,7 +285,8 @@ void Parser::readStatement()
 void Parser::writeStatement()
 {
 	match(WRITE);
-	variableAccessList();
+	cout<<"call expressionList()"<<endl;
+	expressionList();
 	
 		
 }
@@ -242,6 +295,7 @@ void Parser::assignmentStatement()
 	cout<<"call variableAccessList()"<<endl;
 	variableAccessList();
 	match(ASSIGN);
+	cout<<"call expressionList()"<<endl;
 	expressionList();
 }
 
@@ -316,7 +370,9 @@ void Parser::primaryExpression()
 	lookAheadToken();
 	if(ff.firstOfRelOp(nextTok.getSymbol()))
 	{
+		cout<<"Call relationalOperator()"<<endl;	
 		relationalOperator();
+		cout<<"Call primaryExpression()"<<endl;	
 		primaryExpression();
 	}
 }	
@@ -340,10 +396,12 @@ void Parser::simpleExpression()
 	{
 		match(MINUS);	
 	}
+	cout<<"Call term()"<<endl;	
 	term();
 	lookAheadToken();	
 	if(ff.firstOfAddOp(nextTok.getSymbol()))
 	{
+		cout<<"Call addopTerm()"<<endl;	
 		addopTerm();
 				
 	}
@@ -353,10 +411,13 @@ void Parser::simpleExpression()
 void Parser::addopTerm()
 {
 	lookAheadToken();
-	if(ff.firstOfTerm(nextTok.getSymbol()))
+	if(ff.firstOfAddOp(nextTok.getSymbol()))
 	{
-		addingOperator();		
+		cout<<"Call addingOperator()"<<endl;	
+		addingOperator();
+		cout<<"Call addopTerm()"<<endl;			
 		term();
+		cout<<"Call term()"<<endl;	
 		addopTerm();
 	}
 	
@@ -376,11 +437,14 @@ void Parser::addingOperator()
 
 void Parser::term()
 {
+	cout<<"Call factor()"<<endl;
 	factor();
 	lookAheadToken();
 	if(ff.firstOfMultOp(nextTok.getSymbol()))
 	{
+		cout<<"Call multiplyingOperator()"<<endl;
 		multiplyingOperator();
+		cout<<"Call term()"<<endl;
 		term();
 	}
 }
@@ -390,20 +454,25 @@ void Parser::factor()
 	lookAheadToken();
 	if(ff.firstOfConstant(nextTok.getSymbol()))
 	{
+		cout<<"Call constant()"<<endl;
 		constant();	
 	}
 	else if(nextTok.getSymbol() == ID)
 	{
+		cout<<"Call variableAccess()"<<endl;
 		variableAccess();	
 	}
 	else if(nextTok.getSymbol() == LEFTP)
 	{
 		match(LEFTP);
+		cout<<"Call expression()"<<endl;	
 		expression();	
 		match(RIGHTP);
 	}
 	else if(nextTok.getSymbol() == NOT)
 	{
+		match(NOT);
+		cout<<"Call factor()"<<endl;
 		factor();	
 	}
 		
