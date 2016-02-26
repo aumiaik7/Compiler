@@ -8,11 +8,12 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 
 void Parser::program()
 {
-		
+	lineNo = 1;	
 	cout<<"program()"<<endl;	
 	block();	
 	//cout<<"Matched ."<<endl;
 	match(DOT);
+	cout<<"Total no of lines: "<<lineNo<<endl;
 	
 }
 

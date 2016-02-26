@@ -11,7 +11,7 @@ Scanner::Scanner(ifstream &in, Symboltable st)
 Token Scanner::nextToken()
 {	
 	//read a character from source file
-	ch = srcFile.get();
+	ch = srcFile.get()
 	//temorary token object. returns either valid or invalid token
 	Token tok;
 	//lexeme for identifier/keywords
