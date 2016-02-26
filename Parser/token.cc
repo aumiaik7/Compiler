@@ -26,5 +26,13 @@ string Token::getLexeme()
 	return sValue.lexeme;
 }
 
+//identifier type setter(procedure/variable/constant)
+void Token::setIDtype(int type)
+{
+	idType = type;	
+}
 
-
+int Token::getIDtype()
+{
+	return idType;
+}

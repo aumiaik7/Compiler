@@ -84,7 +84,7 @@ int Symboltable::insert(string s,int type)
 					return sym; // for keyword
 				}				
 				else if( s == tempTk.getLexeme())
-					return tempTk.getIDtype(); // same identifier already stored				
+					return 1; // same identifier already stored				
 				
 				//last position so reset
 				else

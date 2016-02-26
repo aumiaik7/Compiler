@@ -1,172 +1,172 @@
 #include "firstfollow.h"
 
 
-/*bool Firstfollow::firstOfDefPart(Symbol sym)
+/*bool Firstfollow::firstOfDefPart(Token tok)
 {
-	bool inDefinition = firstOfDefinition(sym);
+	bool inDefinition = firstOfDefinition(tok);
 
 	return 	inDefinition;
 }
 */
-bool Firstfollow::firstOfDefinition(Symbol sym)
+bool Firstfollow::firstOfDefinition(Token tok)
 {
-	bool inConstDef = firstOfConstDef(sym);
-	bool inVariDef = firstOfVariDef(sym);
-	bool inProcDef = firstOfProcDef(sym);
+	bool inConstDef = firstOfConstDef(tok);
+	bool inVariDef = firstOfVariDef(tok);
+	bool inProcDef = firstOfProcDef(tok);
 	
 	return  inConstDef || inVariDef || inProcDef;		
 	
 }
 
-bool Firstfollow::firstOfConstDef(Symbol sym)
+bool Firstfollow::firstOfConstDef(Token tok)
 {
-	if(sym == CONST)
+	if(tok.getSymbol() == CONST)
 		return true;
 	else
 		return false;	
 }
 
 
-bool Firstfollow::firstOfVariDef(Symbol sym)
+bool Firstfollow::firstOfVariDef(Token tok)
 {
-	if(sym == INT || sym == BOOL)
+	if(tok.getSymbol() == INT || tok.getSymbol() == BOOL)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfProcDef(Symbol sym)
+bool Firstfollow::firstOfProcDef(Token tok)
 {
-	if(sym == PROC)
+	if(tok.getSymbol() == PROC)
 		return true;	
 	else
 		return false;
 }
 
-bool Firstfollow::firstOfVariList(Symbol sym)
+bool Firstfollow::firstOfVariList(Token tok)
 {
-	if(sym == ID)
+	if(tok.getSymbol() == ID && tok.getIDtype() == 1)
 		return true;
 	else
 		return false;	
 }
 
 
-bool Firstfollow::firstOfStatement(Symbol sym)
+bool Firstfollow::firstOfStatePart(Token tok)
 {
 	
 }
-bool Firstfollow::firstOfStatement(Symbol sym)
+bool Firstfollow::firstOfStatement(Token tok)
 {
-	bool inEmptySt = firstOfEmptySt(sym);
-	bool inReadSt = firstOfReadSt(sym);
-	bool inWriteSt = firstOfWriteSt(sym);
-	bool inAssignSt = firstOfAssignSt(sym);
-	bool inProcSt = firstOfProcSt(sym);
-	bool inIfSt = firstOfIfSt(sym);
-	bool inDoSt = firstOfDoSt(sym);
+	bool inEmptySt = firstOfEmptySt(tok);
+	bool inReadSt = firstOfReadSt(tok);
+	bool inWriteSt = firstOfWriteSt(tok);
+	bool inAssignSt = firstOfAssignSt(tok);
+	bool inProcSt = firstOfProcSt(tok);
+	bool inIfSt = firstOfIfSt(tok);
+	bool inDoSt = firstOfDoSt(tok);
 	
 	
 	return  inEmptySt || inReadSt || inWriteSt || inAssignSt || inProcSt || inIfSt || inDoSt ;		
 	
 }
-bool Firstfollow::firstOfEmptySt(Symbol sym)
+bool Firstfollow::firstOfEmptySt(Token tok)
 {
-	if(sym == SKIP)
+	if(tok.getSymbol() == SKIP)
 		return true;
 	else
 		return false;		
 }
 
 
-bool Firstfollow::firstOfReadSt(Symbol sym)
+bool Firstfollow::firstOfReadSt(Token tok)
 {
-	if(sym == READ)
+	if(tok.getSymbol() == READ)
 		return true;
 	else
 		return false;		
 }
 
-bool Firstfollow::firstOfWriteSt(Symbol sym)
+bool Firstfollow::firstOfWriteSt(Token tok)
 {
-	if(sym == WRITE)
+	if(tok.getSymbol() == WRITE)
 		return true;
 	else
 		return false;		
 }
-bool Firstfollow::firstOfProcSt(Symbol sym)
+bool Firstfollow::firstOfProcSt(Token tok)
 {
-	if(sym == CALL)
+	if(tok.getSymbol() == CALL)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfAssignSt(Symbol sym)
+bool Firstfollow::firstOfAssignSt(Token tok)
 {
-	bool inVAList = firstOfVAList(sym);
+	bool inVAList = firstOfVAList(tok);
 	
 	return 	inVAList;
 }
 
-bool Firstfollow::firstOfIfSt(Symbol sym)
+bool Firstfollow::firstOfIfSt(Token tok)
 {
-	if(sym == IF)
+	if(tok.getSymbol() == IF)
 		return true;
 	else
 		return false;
 }
 
-bool Firstfollow::firstOfDoSt(Symbol sym)
+bool Firstfollow::firstOfDoSt(Token tok)
 {
-	if(sym == DO)
+	if(tok.getSymbol() == DO)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfVAList(Symbol sym)
+bool Firstfollow::firstOfVAList(Token tok)
 {
-	if(sym == ID)
+	if(tok.getSymbol() == ID && tok.getIDtype() == 1)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfIndexSel(Symbol sym)
+bool Firstfollow::firstOfIndexSel(Token tok)
 {
-	if(sym == LEFTBRACKET)
+	if(tok.getSymbol() == LEFTBRACKET)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfPrimOp(Symbol sym)
+bool Firstfollow::firstOfPrimOp(Token tok)
 {
-	if(sym == AND || sym == OR)
+	if(tok.getSymbol() == AND || tok.getSymbol() == OR)
 		return true;
 	else
 		return false;	
 }
 
-bool Firstfollow::firstOfTerm(Symbol sym)
+bool Firstfollow::firstOfTerm(Token tok)
 {
-	bool inFactor = firstOfFactor(sym);
+	bool inFactor = firstOfFactor(tok);
 	
 	return inFactor;
 }
 
-bool Firstfollow::firstOfFactor(Symbol sym)
+bool Firstfollow::firstOfFactor(Token tok)
 {
 	bool isName = false;
-	bool inConst = firstOfConstant(sym);
+	bool inConst = firstOfConstant(tok);
 	bool isLeftp = false;
 	bool isTilt = false;
-	if(sym == ID)
+	if(tok.getSymbol() == ID)
 		isName = true;
-	else if(sym == LEFTP)
+	else if(tok.getSymbol() == LEFTP)
 		isLeftp = true;
-	else if(sym == NOT)
+	else if(tok.getSymbol() == NOT)
 		isTilt = true;
 
 	return isName || inConst || isLeftp || isTilt;
@@ -175,33 +175,33 @@ bool Firstfollow::firstOfFactor(Symbol sym)
 }
 
 
-bool Firstfollow::firstOfConstant(Symbol sym)
+bool Firstfollow::firstOfConstant(Token tok)
 {
-	if(sym == NUMERAL || sym == TRUE || sym == FALSE || sym == ID)
+	if(tok.getSymbol() == NUMERAL || tok.getSymbol() == TRUE || tok.getSymbol() == FALSE || (tok.getSymbol() == ID && tok.getIDtype() == 2))
 		return true;
 	else
 		return false;
 }
 
-bool Firstfollow::firstOfRelOp(Symbol sym)
+bool Firstfollow::firstOfRelOp(Token tok)
 {
-	if(sym == LESST || sym == EQUAL || sym == GREATERT || sym == LTE || sym == GTE)
+	if(tok.getSymbol() == LESST || tok.getSymbol() == EQUAL || tok.getSymbol() == GREATERT || tok.getSymbol() == LTE || tok.getSymbol() == GTE)
 		return true;
 	else
 		return false;
 }
 
-bool Firstfollow::firstOfMultOp(Symbol sym)
+bool Firstfollow::firstOfMultOp(Token tok)
 {
-	if(sym == TIMES || sym == DIV || sym == MOD)
+	if(tok.getSymbol() == TIMES || tok.getSymbol() == DIV || tok.getSymbol() == MOD)
 		return true;
 	else
 		return false;
 }
 
-bool Firstfollow::firstOfAddOp(Symbol sym)
+bool Firstfollow::firstOfAddOp(Token tok)
 {
-	if(sym == PLUS || sym == MINUS)
+	if(tok.getSymbol() == PLUS || tok.getSymbol() == MINUS)
 		return true;
 	else
 		return false;
@@ -211,21 +211,25 @@ bool Firstfollow::firstOfAddOp(Symbol sym)
 
 
 //follow
-bool Firstfollow::followOfDefPart(Symbol sym)
+bool Firstfollow::followOfDefPart(Token tok)
 {
-	bool inStatement = firstOfEmptySt(sym);
+	bool inStatement = firstOfEmptySt(tok);
+	bool isDot = false;
 	bool isEnd = false;
 	
-	if(sym == END)
+	
+	if(tok.getSymbol() == END)
 		isEnd = true;
+	else if(tok.getSymbol() == DOT)
+		isDot = true;
 
-	return inStatement || isEnd;
+	return inStatement || isEnd || isDot;
 }
 
 
-bool Firstfollow::followOfStatePart(Symbol sym)
+bool Firstfollow::followOfStatePart(Token tok)
 {
-	if(sym == END)
+	if(tok.getSymbol() == END)
 		return true;
 	else
 		return false;

@@ -21,6 +21,7 @@ class Token
 	//used in getter functions
 	attVal sValue;
 	Symbol symbolName;
+	int idType;
 	
 	
 	public:
@@ -28,10 +29,12 @@ class Token
 	Token();
 	//constructor for setting attributes for token
 	Token(Symbol sym, int val, string lex );
-	//getter functions
+	//setter/getter functions
 	Symbol getSymbol();
 	int getValue(); 
 	string getLexeme(); 
+	void setIDtype(int type);
+	int getIDtype();
 };
 
 #endif

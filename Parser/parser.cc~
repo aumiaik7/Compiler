@@ -9,7 +9,7 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 void Parser::program()
 {
 		
-	cout<<"Call block()"<<endl;	
+	cout<<"program()"<<endl;	
 	block();	
 	//cout<<"Matched ."<<endl;
 	match(DOT);
@@ -18,25 +18,23 @@ void Parser::program()
 
 void Parser::block()
 {
-	
+	cout<<"block()"<<endl;
 	//cout<<"Matched begin"<<endl;		
 	match(BEGIN);	
 
 	lookAheadToken();
-	if(ff.firstOfDefinition(nextTok.getSymbol()))
+	if(ff.firstOfDefinition(nextTok))
 	{	
-		cout<<"Call definitionPart()"<<endl;
+		
 		definitionPart();
-	
-		cout<<"Call statementPart()"<<endl;
 		statementPart();
 	
 	}
-	else if(ff.followOfDefPart(nextTok.getSymbol()))
+	else if(ff.firstOfStatement(nextTok))
 	{
 		
 		statementPart();
-		/*if(ff.firstOfStatement(nextTok.getSymbol()))		
+		/*if(ff.firstOfStatement(nextTok))		
 		{
 			cout<<"Call statementPart()"<<endl;
 			statementPart();
@@ -55,13 +53,13 @@ void Parser::block()
 void Parser::definitionPart()
 {
 	
-	
+	cout<<"definitionPart()"<<endl;
 	//cout<<"Matched semicolon"<<endl;
 	
 	lookAheadToken();	
-	if(ff.firstOfDefinition(nextTok.getSymbol()))
+	if(ff.firstOfDefinition(nextTok))
 	{
-		cout<<"Call definition()"<<endl;
+		
 		definition();
 		match(SEMICOLON);	
 		definitionPart();
@@ -76,21 +74,19 @@ void Parser::definitionPart()
 
 void Parser::definition()
 {
+	cout<<"definition()"<<endl;
 	
 	lookAheadToken();
-	if(ff.firstOfConstDef(nextTok.getSymbol()))
+	if(ff.firstOfConstDef(nextTok))
 	{
-		cout<<"Call constantDefinition()"<<endl;		
 		constantDefinition();
 	}
-	else if(ff.firstOfVariDef(nextTok.getSymbol()))
+	else if(ff.firstOfVariDef(nextTok))
 	{
-		cout<<"Call variableDefinition()"<<endl;		
 		variableDefinition();
 	}
-	else if(ff.firstOfProcDef(nextTok.getSymbol()))
+	else if(ff.firstOfProcDef(nextTok))
 	{
-		cout<<"Call procedureDefinition()"<<endl;	
 		procedureDefinition();
 	}
 }
@@ -101,10 +97,18 @@ void Parser::definition()
 
 void Parser::constantDefinition()
 {
+	cout<<"constantDefinition()"<<endl;
 	//cout<<"Matched const"<<endl;
 	match(CONST);
 	//cout<<"Matched ID"<<endl;
-	match(ID);
+	if(match(ID))
+	{
+		if(nextTok.getIDtype() != 2)
+		{	
+			//error message
+			//cout
+		}
+	}
 	//cout<<"Matched ="<<endl;	
 	match(EQUAL);
 	
@@ -115,20 +119,17 @@ void Parser::constantDefinition()
 
 void Parser::variableDefinition()
 {
-	cout<<"Call typeSymbol()"<<endl;	
+	cout<<"variableDefinition()"<<endl;	
 	typeSymbol();
 	lookAheadToken();
-	if(ff.firstOfVariList(nextTok.getSymbol()))
+	if(ff.firstOfVariList(nextTok))
 	{
-		cout<<"Call varableList()"<<endl;		
 		variableList();
 	}
 	else if(match(ARRAY))
 	{
-		cout<<"Call varableList()"<<endl;		
 		variableList();
 		match(LEFTBRACKET);
-		cout<<"Call constant()"<<endl;
 		constant();
 		match(RIGHTBRACKET);		
 	}
@@ -138,6 +139,7 @@ void Parser::variableDefinition()
 
 void Parser::typeSymbol()
 {
+	cout<<"typeSymbol()"<<endl;
 	if(match(INT) || match(BOOL))
 	{
 		//do nothing		
@@ -152,11 +154,18 @@ void Parser::typeSymbol()
 
 void Parser::variableList()
 {
-	match(ID);
+	cout<<"variableList()"<<endl;
+	if(match(ID))
+	{
+		if(nextTok.getIDtype() != 1)
+		{	
+			//error message
+			//cout
+		}
+	}
 	//lookAheadToken();
 	if(match(COMMA))
 	{
-		cout<<"Call varableList()"<<endl;
 		variableList();
 	}
 	else
@@ -168,17 +177,16 @@ void Parser::variableList()
 
 void Parser::statementPart()
 {
-	
+	cout<<"statementPart()"<<endl;
 	lookAheadToken();	
-	if(ff.firstOfStatement(nextTok.getSymbol()))
+	if(ff.firstOfStatement(nextTok))
 	{
-		cout<<"Call statement()"<<endl;
 		statement();
 		match(SEMICOLON);
 		//cout<<"Hola "<<nextTok.getSymbol()<<endl;	
 		statementPart();
 	}
-	else if(ff.followOfStatePart(nextTok.getSymbol()))
+	else if(ff.followOfStatePart(nextTok))
 	{
 		//do nothing
 		cout<<"statementPart() called but 0 statement found"<<endl;
@@ -191,39 +199,42 @@ void Parser::statementPart()
 
 void Parser::statement()
 {
+	cout<<"statement()"<<endl;
 	lookAheadToken();	
-	if(ff.firstOfEmptySt(nextTok.getSymbol()))
+	if(ff.firstOfEmptySt(nextTok))
 	{
 		match(SKIP);
 	}
-	else if(ff.firstOfReadSt(nextTok.getSymbol()))
+	else if(ff.firstOfReadSt(nextTok))
 	{
-		cout<<"call readStatement()"<<endl;
 		readStatement();
 	}
-	else if(ff.firstOfWriteSt(nextTok.getSymbol()))
+	else if(ff.firstOfWriteSt(nextTok))
 	{
-		cout<<"call writeStatement()"<<endl;
 		writeStatement();
 	}
-	else if(ff.firstOfProcSt(nextTok.getSymbol()))
+	else if(ff.firstOfProcSt(nextTok))
 	{
 		match(CALL);
-		match(ID);
+		if(match(ID))
+		{
+			if(nextTok.getIDtype() != 3)
+			{	
+				//error message
+				//cout
+			}
+		}
 	}
-	else if(ff.firstOfAssignSt(nextTok.getSymbol()))
+	else if(ff.firstOfAssignSt(nextTok))
 	{
-		cout<<"call assignmentStatement()"<<endl;
 		assignmentStatement();
 	}
-	else if(ff.firstOfIfSt(nextTok.getSymbol()))
+	else if(ff.firstOfIfSt(nextTok))
 	{
-		cout<<"call ifStatement()"<<endl;
 		ifStatement();		
 	}
-	else if(ff.firstOfDoSt(nextTok.getSymbol()))
+	else if(ff.firstOfDoSt(nextTok))
 	{
-		cout<<"call doStatement()"<<endl;
 		doStatement();		
 	}
 	else
@@ -234,16 +245,16 @@ void Parser::statement()
 
 void Parser::doStatement()
 {
+	cout<<"doStatement()"<<endl;
 	match(DO);
-	cout<<"call guardedCommandList()"<<endl;
 	guardedCommandList();
 	match(OD);
 }
 
 void Parser::ifStatement()
 {
+	cout<<"ifStatement()"<<endl;
 	match(IF);
-	cout<<"call guardedCommandList()"<<endl;
 	guardedCommandList();
 	match(FI);
 	
@@ -251,61 +262,56 @@ void Parser::ifStatement()
 
 void Parser::guardedCommandList()
 {
-	cout<<"call guardedCommand()"<<endl;
+	cout<<"guardedCommandList()"<<endl;
 	guardedCommand();
 	lookAheadToken();
 	if(nextTok.getSymbol() == GC1)
 	{
 		match(GC1);
-		cout<<"call guardedCommandList()"<<endl;
 		guardedCommandList();
 	}
 }
 
 void Parser::guardedCommand()
 {
-	cout<<"call expression()"<<endl;
+	cout<<"guardedCommand()"<<endl;
 	expression();
 	match(GC2);
 	lookAheadToken();
-	cout<<"call statementPart()"<<endl;
 	statementPart();
 }
 
 
 void Parser::readStatement()
 {
+	cout<<"readStatement()"<<endl;
 	match(READ);
-	cout<<"call variableAccessList()"<<endl;
 	variableAccessList();
-	
-		
+			
 }
 
 void Parser::writeStatement()
 {
+	cout<<"writeStatement()"<<endl;
 	match(WRITE);
-	cout<<"call expressionList()"<<endl;
 	expressionList();
 	
 		
 }
 void Parser::assignmentStatement()
 {
-	cout<<"call variableAccessList()"<<endl;
+	cout<<"assignmentStatement()"<<endl;
 	variableAccessList();
 	match(ASSIGN);
-	cout<<"call expressionList()"<<endl;
 	expressionList();
 }
 
 void Parser::expressionList()
 {
-	cout<<"call expression()"<<endl;
+	cout<<"expressionList()"<<endl;
 	expression();
 	if(match(COMMA))
 	{
-		cout<<"Call expressionList()"<<endl;
 		expressionList();
 	}
 	else
@@ -316,11 +322,10 @@ void Parser::expressionList()
 
 void Parser::variableAccessList()
 {
-	cout<<"call variableAccess()"<<endl;
+	cout<<"variableAccessList()"<<endl;
 	variableAccess();
 	if(match(COMMA))
 	{
-		cout<<"Call variableAccessList()"<<endl;
 		variableAccessList();
 	}
 	else
@@ -333,12 +338,19 @@ void Parser::variableAccessList()
 
 void Parser::variableAccess()
 {
-	match(ID);
+	cout<<"variableAccess()"<<endl;	
+	if(match(ID))
+	{
+		if(nextTok.getIDtype() != 1)
+		{	
+			//error message
+			//cout
+		}
+	}
 	lookAheadToken();
-	if(ff.firstOfIndexSel(nextTok.getSymbol()))
+	if(ff.firstOfIndexSel(nextTok))
 	{
 		match(LEFTBRACKET);
-		cout<<"Call expression()"<<endl;		
 		expression();
 		match(RIGHTBRACKET);
 	}
@@ -346,15 +358,13 @@ void Parser::variableAccess()
 
 void Parser::expression()
 {
-	cout<<"Call primaryExpression()"<<endl;	
+	cout<<"expression()"<<endl;	
 	primaryExpression();
 	
 	lookAheadToken();
-	if(ff.firstOfPrimOp(nextTok.getSymbol()))
+	if(ff.firstOfPrimOp(nextTok))
 	{
-		cout<<"Call primaryOperator()"<<endl;
 		primaryOperator();
-		cout<<"Call primaryExpression()"<<endl;
 		expression();
 				
 	}
@@ -364,21 +374,20 @@ void Parser::expression()
 void Parser::primaryExpression()
 {
 
-	cout<<"Call simpleExpression()"<<endl;	
+	cout<<"primaryExpression()"<<endl;	
 	simpleExpression();
 	
 	lookAheadToken();
-	if(ff.firstOfRelOp(nextTok.getSymbol()))
+	if(ff.firstOfRelOp(nextTok))
 	{
-		cout<<"Call relationalOperator()"<<endl;	
 		relationalOperator();
-		cout<<"Call primaryExpression()"<<endl;	
-		primaryExpression();
+		simpleExpression();
 	}
 }	
 
 void Parser::relationalOperator()
 {
+	cout<<"relationalOperator()"<<endl;
 	if(match(LESST) || match(EQUAL) || match(GREATERT) || match(LTE) || match(GTE))
 	{
 		cout<<"Ignore"<<endl;	
@@ -391,17 +400,16 @@ void Parser::relationalOperator()
 
 void Parser::simpleExpression()
 {
+	cout<<"simpleExpression()"<<endl;
 	lookAheadToken();
-	if(!ff.firstOfTerm(nextTok.getSymbol()))
+	if(!ff.firstOfTerm(nextTok))
 	{
 		match(MINUS);	
 	}
-	cout<<"Call term()"<<endl;	
 	term();
 	lookAheadToken();	
-	if(ff.firstOfAddOp(nextTok.getSymbol()))
+	if(ff.firstOfAddOp(nextTok))
 	{
-		cout<<"Call addopTerm()"<<endl;	
 		addopTerm();
 				
 	}
@@ -411,13 +419,10 @@ void Parser::simpleExpression()
 void Parser::addopTerm()
 {
 	lookAheadToken();
-	if(ff.firstOfAddOp(nextTok.getSymbol()))
+	if(ff.firstOfAddOp(nextTok))
 	{
-		cout<<"Call addingOperator()"<<endl;	
 		addingOperator();
-		cout<<"Call addopTerm()"<<endl;			
 		term();
-		cout<<"Call term()"<<endl;	
 		addopTerm();
 	}
 	
@@ -425,6 +430,7 @@ void Parser::addopTerm()
 
 void Parser::addingOperator()
 {
+	cout<<"addingOperator()"<<endl;
 	if(match(PLUS) || match(MINUS))
 	{
 		cout<<"Ignore"<<endl;	
@@ -437,42 +443,38 @@ void Parser::addingOperator()
 
 void Parser::term()
 {
+	cout<<"term()"<<endl;
 	cout<<"Call factor()"<<endl;
 	factor();
 	lookAheadToken();
-	if(ff.firstOfMultOp(nextTok.getSymbol()))
+	if(ff.firstOfMultOp(nextTok))
 	{
-		cout<<"Call multiplyingOperator()"<<endl;
 		multiplyingOperator();
-		cout<<"Call term()"<<endl;
 		term();
 	}
 }
 
 void Parser::factor()
 {
+	cout<<"factor()"<<endl;
 	lookAheadToken();
-	if(ff.firstOfConstant(nextTok.getSymbol()))
+	if(ff.firstOfConstant(nextTok))
 	{
-		cout<<"Call constant()"<<endl;
 		constant();	
 	}
 	else if(nextTok.getSymbol() == ID)
 	{
-		cout<<"Call variableAccess()"<<endl;
 		variableAccess();	
 	}
 	else if(nextTok.getSymbol() == LEFTP)
 	{
 		match(LEFTP);
-		cout<<"Call expression()"<<endl;	
 		expression();	
 		match(RIGHTP);
 	}
 	else if(nextTok.getSymbol() == NOT)
 	{
 		match(NOT);
-		cout<<"Call factor()"<<endl;
 		factor();	
 	}
 		
@@ -480,6 +482,7 @@ void Parser::factor()
 
 void Parser::multiplyingOperator()
 {
+	cout<<"multiplyingOperator()"<<endl;
 	if(match(TIMES) || match(DIV) || match(MOD))
 	{
 		cout<<"Ignore"<<endl;	
@@ -492,6 +495,7 @@ void Parser::multiplyingOperator()
 
 void Parser::primaryOperator()
 {
+	cout<<"primaryOperator()"<<endl;
 	if(match(AND) || match(OR))
 	{
 		cout<<"Ignore"<<endl;
@@ -504,7 +508,7 @@ void Parser::primaryOperator()
 
 void Parser::constant()
 {
-	
+	cout<<"constant()"<<endl;
 	if(match(NUMERAL) || match(TRUE) || match(FALSE) || match(ID))
 	{
 		//do nothing
@@ -520,7 +524,14 @@ void Parser::constant()
 void Parser::procedureDefinition()
 {
 	match(PROC);
-	match(ID);
+	if(match(ID))
+	{
+		if(nextTok.getIDtype() != 3)
+		{	
+			//error message
+			//cout
+		}
+	}
 	block();
 }
 //function for matching terminal symbols

@@ -24,51 +24,51 @@ class Firstfollow
 	public:
 	//functions for checking wheather the look ahead token is in first of any non terminal 
 	//First of Definition	
-	bool firstOfDefinition(Symbol sym);
+	bool firstOfDefinition(Token tok);
 	//First of ConstantDefinition
-	bool firstOfConstDef(Symbol sym);
+	bool firstOfConstDef(Token tok);
 	//First of VariableDefinition
-	bool firstOfVariDef(Symbol sym); 
+	bool firstOfVariDef(Token tok); 
 	//First of ProcedureDefinition	
-	bool firstOfProcDef(Symbol sym); 
+	bool firstOfProcDef(Token tok); 
 	//First of VariableList	
-	bool firstOfVariList(Symbol sym);
+	bool firstOfVariList(Token tok);
 	//First of StatementPart	
-	bool firstOfStatement(Symbol sym); 
+	bool firstOfStatePart(Token tok); 
 	//First of Statement	
-	bool firstOfStatement(Symbol sym);
+	bool firstOfStatement(Token tok);
 	//First of EmptyStatement	
-	bool firstOfEmptySt(Symbol sym);
+	bool firstOfEmptySt(Token tok);
 	//First of ReadStatement	
-	bool firstOfReadSt(Symbol sym);
+	bool firstOfReadSt(Token tok);
 	//First of WriteStatement
-	bool firstOfWriteSt(Symbol sym);
+	bool firstOfWriteSt(Token tok);
 	//First of WriteStatement
-	bool firstOfProcSt(Symbol sym);
+	bool firstOfProcSt(Token tok);
 	//First of AssignmentStatement
-	bool firstOfAssignSt(Symbol sym);
+	bool firstOfAssignSt(Token tok);
 	//First of VariableAccessList
-	bool firstOfVAList(Symbol sym);	
+	bool firstOfVAList(Token tok);	
 	//First of IndexSelector
-	bool firstOfIndexSel(Symbol sym);
+	bool firstOfIndexSel(Token tok);
 	//First of PrimaryOperator
-	bool firstOfPrimOp(Symbol sym);
+	bool firstOfPrimOp(Token tok);
 	//First of Term
-	bool firstOfTerm(Symbol sym);
+	bool firstOfTerm(Token tok);
 	//First of Factor
-	bool firstOfFactor(Symbol sym);
+	bool firstOfFactor(Token tok);
 	//First of Constant
-	bool firstOfConstant(Symbol sym);
+	bool firstOfConstant(Token tok);
 	//First of RelationalOperator
-	bool firstOfRelOp(Symbol sym);
+	bool firstOfRelOp(Token tok);
 	//First of MultiplyingOperator
-	bool firstOfMultOp(Symbol sym);
+	bool firstOfMultOp(Token tok);
 	//First of AddingOperator
-	bool firstOfAddOp(Symbol sym);
+	bool firstOfAddOp(Token tok);
 	//First of IfStatement
-	bool firstOfIfSt(Symbol sym);
+	bool firstOfIfSt(Token tok);
 	//First of DoStatement
-	bool firstOfDoSt(Symbol sym);
+	bool firstOfDoSt(Token tok);
 
 	
 
@@ -83,8 +83,8 @@ class Firstfollow
 
 
 	//functions for checking wheather the look ahead token is in follow of any non terminal 
-	bool followOfDefPart(Symbol sym);
-	bool followOfStatePart(Symbol sym);
+	bool followOfDefPart(Token tok);
+	bool followOfStatePart(Token tok);
 		
 		
 		

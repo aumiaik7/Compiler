@@ -1,11 +1,5 @@
+$PL Program: Linear Search
 begin
 	
-	$do ~(i>n)->read A[i];i:=i+1;od;
-	do~(x = 0)->
-		call Search;
-		if found->write x,i;[]
-		~found->write x;
-		fi;
-		read x;
-	od;
 end.
+

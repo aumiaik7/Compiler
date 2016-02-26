@@ -18,6 +18,7 @@ class Scanner
 	ifstream &srcFile;//source file input stream
 	Symboltable &symTablePtr;//Symbol table object
 	char ch,laCh;//char and look-ahead char
+	int idType;
 	bool isWhitespace(char lach);//helps to detect white spaces
 	bool isSpecial(char lach);//helps to detect special symbols
 	bool isNumEnd(char lach);//helps to detect end of numerals
