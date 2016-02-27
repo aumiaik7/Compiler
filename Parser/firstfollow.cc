@@ -213,7 +213,7 @@ bool Firstfollow::firstOfAddOp(Token tok)
 //follow
 bool Firstfollow::followOfDefPart(Token tok)
 {
-	bool inStatement = firstOfEmptySt(tok);
+	bool inStatement = firstOfStatement(tok);
 	bool isEnd = false;
 	
 	

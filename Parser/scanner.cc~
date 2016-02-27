@@ -2,7 +2,7 @@
 
 //constructor
 Scanner::Scanner(ifstream &in, Symboltable st)
-:srcFile(in), symTablePtr(st),idType(1)
+:srcFile(in), symTablePtr(st),idType(0)
 {
 	
 }
@@ -11,7 +11,7 @@ Scanner::Scanner(ifstream &in, Symboltable st)
 Token Scanner::nextToken()
 {	
 	//read a character from source file
-	ch = srcFile.get()
+	ch = srcFile.get();
 	//temorary token object. returns either valid or invalid token
 	Token tok;
 	//lexeme for identifier/keywords
@@ -65,7 +65,6 @@ Token Scanner::nextToken()
 				{
 					Token tk(ID,-1,lex);
 					tk.setIDtype(keyOrId);
-					cout<<"ID: "<<tk.getLexeme()<<" IDType: "<< tk.getIDtype()<<endl;
 					idType = 1;	
 					return tk;
 				}

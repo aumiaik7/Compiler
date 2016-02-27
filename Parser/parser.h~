@@ -93,8 +93,6 @@ class Parser
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
 
-	void ErrorCount();
-
 	
 		
 };

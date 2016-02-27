@@ -1,6 +1,6 @@
 $PL Program: Linear Search
 begin
-	const n  10integer array A[n];
+	const n = 10;integer array A[n];
 	integer x,i; Boolean found;
 
 	proc Search
@@ -28,3 +28,4 @@ $Input Table:
 		read x;
 	od;
 end
+

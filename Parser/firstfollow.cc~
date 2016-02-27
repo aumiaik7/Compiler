@@ -214,16 +214,14 @@ bool Firstfollow::firstOfAddOp(Token tok)
 bool Firstfollow::followOfDefPart(Token tok)
 {
 	bool inStatement = firstOfEmptySt(tok);
-	bool isDot = false;
 	bool isEnd = false;
 	
 	
 	if(tok.getSymbol() == END)
 		isEnd = true;
-	else if(tok.getSymbol() == DOT)
-		isDot = true;
+	
 
-	return inStatement || isEnd || isDot;
+	return inStatement || isEnd ;
 }
 
 

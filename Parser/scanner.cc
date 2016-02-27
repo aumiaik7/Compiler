@@ -65,7 +65,6 @@ Token Scanner::nextToken()
 				{
 					Token tk(ID,-1,lex);
 					tk.setIDtype(keyOrId);
-					cout<<"ID: "<<tk.getLexeme()<<" IDType: "<< tk.getIDtype()<<endl;
 					idType = 1;	
 					return tk;
 				}

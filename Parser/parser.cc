@@ -9,19 +9,31 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 void Parser::program()
 {
 	lineNo = 1;	
-	cout<<"program()"<<endl;	
+	errorCount = 0;
+	outFile<<"program()"<<endl;	
 	block();	
-	//cout<<"Matched ."<<endl;
-	match(DOT);
-	cout<<"Total no of lines: "<<lineNo<<endl;
+	//outFile<<"Matched ."<<endl;
+	if(!match(DOT))
+	{
+		cerr<<"Syntax Error: "<<"'.' (dot) is missing at line "<< (lineNo - 1) <<endl;
+		ErrorCount();	
+	}
+
+	outFile<<"Total no of lines: "<<lineNo<<endl;
 	
 }
 
 void Parser::block()
 {
-	cout<<"block()"<<endl;
-	//cout<<"Matched begin"<<endl;		
-	match(BEGIN);	
+	outFile<<"block()"<<endl;
+	//outFile<<"Matched begin"<<endl;		
+	if(!match(BEGIN))
+	{
+		cerr<<"Syntax Error: "<<"begin is missing at line "<< lineNo  <<endl;
+		ErrorCount();
+		syntaxError(1);
+	}
+			
 
 	lookAheadToken();
 	if(ff.firstOfDefinition(nextTok))
@@ -31,13 +43,13 @@ void Parser::block()
 		statementPart();
 	
 	}
-	else if(ff.firstOfStatement(nextTok))
+	else if(ff.followOfDefPart(nextTok))
 	{
 		
 		statementPart();
 		/*if(ff.firstOfStatement(nextTok))		
 		{
-			cout<<"Call statementPart()"<<endl;
+			outFile<<"Call statementPart()"<<endl;
 			statementPart();
 		}
 		*/
@@ -46,23 +58,37 @@ void Parser::block()
 	else
 	{
 		//error message
+		cerr<<"Syntax Error: "<<"Illegal start of definition/statement at line "<< lineNo <<endl;
+		ErrorCount();
 	}
-	match(END);
+
+	if(!match(END))
+	{
+		cerr<<"Syntax Error: "<<"end is missing at line "<< lineNo <<endl;
+		ErrorCount();
+		syntaxError(2);
+	}	
+	
 	
 }
 
 void Parser::definitionPart()
 {
 	
-	cout<<"definitionPart()"<<endl;
-	//cout<<"Matched semicolon"<<endl;
+	outFile<<"definitionPart()"<<endl;
+	//outFile<<"Matched semicolon"<<endl;
 	
 	lookAheadToken();	
 	if(ff.firstOfDefinition(nextTok))
 	{
 		
 		definition();
-		match(SEMICOLON);	
+		if(!match(SEMICOLON))
+		{
+			cerr<<"Syntax Error: "<<" ';' is missing at line "<< lineNo <<endl;
+			ErrorCount();
+			syntaxError(3);
+		}		
 		definitionPart();
 	}
 	
@@ -75,7 +101,7 @@ void Parser::definitionPart()
 
 void Parser::definition()
 {
-	cout<<"definition()"<<endl;
+	outFile<<"definition()"<<endl;
 	
 	lookAheadToken();
 	if(ff.firstOfConstDef(nextTok))
@@ -98,20 +124,34 @@ void Parser::definition()
 
 void Parser::constantDefinition()
 {
-	cout<<"constantDefinition()"<<endl;
-	//cout<<"Matched const"<<endl;
+	outFile<<"constantDefinition()"<<endl;
+	//outFile<<"Matched const"<<endl;
 	match(CONST);
-	//cout<<"Matched ID"<<endl;
+	//outFile<<"Matched ID"<<endl;
 	if(match(ID))
 	{
 		if(nextTok.getIDtype() != 2)
 		{	
 			//error message
 			//cout
+			cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
+			ErrorCount();
 		}
+		
 	}
-	//cout<<"Matched ="<<endl;	
-	match(EQUAL);
+	else
+	{
+			cerr<<"Syntax Error: "<<" constantName is missing at line "<< lineNo <<endl;
+			ErrorCount();
+			syntaxError(4);
+	}
+	//outFile<<"Matched ="<<endl;	
+	if(!match(EQUAL))
+	{
+		cerr<<"Syntax Error: "<<" '=' is missing at line "<< lineNo <<endl;
+		ErrorCount();
+		syntaxError(5);
+	}
 	
 	
 	constant();
@@ -120,7 +160,7 @@ void Parser::constantDefinition()
 
 void Parser::variableDefinition()
 {
-	cout<<"variableDefinition()"<<endl;	
+	outFile<<"variableDefinition()"<<endl;	
 	typeSymbol();
 	lookAheadToken();
 	if(ff.firstOfVariList(nextTok))
@@ -134,28 +174,32 @@ void Parser::variableDefinition()
 		constant();
 		match(RIGHTBRACKET);		
 	}
+	else
+	{
+
+	}
 }
 
 
 
 void Parser::typeSymbol()
 {
-	cout<<"typeSymbol()"<<endl;
+	outFile<<"typeSymbol()"<<endl;
 	if(match(INT) || match(BOOL))
 	{
 		//do nothing		
-		cout<<"Ignore Matching errors"<<endl;
+		outFile<<"Ignore Matching errors"<<endl;
 	}
 	else
 	{	//error msg
-		cout<<"Error in typeSymbol"<<endl;
+		outFile<<"Error in typeSymbol"<<endl;
 	}
 	
 }
 
 void Parser::variableList()
 {
-	cout<<"variableList()"<<endl;
+	outFile<<"variableList()"<<endl;
 	if(match(ID))
 	{
 		if(nextTok.getIDtype() != 1)
@@ -171,26 +215,26 @@ void Parser::variableList()
 	}
 	else
 	{
-		cout<<"Ignore"<<endl;
+		outFile<<"Ignore"<<endl;
 	}
 	
 }
 
 void Parser::statementPart()
 {
-	cout<<"statementPart()"<<endl;
+	outFile<<"statementPart()"<<endl;
 	lookAheadToken();	
 	if(ff.firstOfStatement(nextTok))
 	{
 		statement();
 		match(SEMICOLON);
-		//cout<<"Hola "<<nextTok.getSymbol()<<endl;	
+		//outFile<<"Hola "<<nextTok.getSymbol()<<endl;	
 		statementPart();
 	}
 	else if(ff.followOfStatePart(nextTok))
 	{
 		//do nothing
-		cout<<"statementPart() called but 0 statement found"<<endl;
+		outFile<<"statementPart() called but 0 statement found"<<endl;
 	}
 	else
 	{
@@ -200,7 +244,7 @@ void Parser::statementPart()
 
 void Parser::statement()
 {
-	cout<<"statement()"<<endl;
+	outFile<<"statement()"<<endl;
 	lookAheadToken();	
 	if(ff.firstOfEmptySt(nextTok))
 	{
@@ -246,7 +290,7 @@ void Parser::statement()
 
 void Parser::doStatement()
 {
-	cout<<"doStatement()"<<endl;
+	outFile<<"doStatement()"<<endl;
 	match(DO);
 	guardedCommandList();
 	match(OD);
@@ -254,7 +298,7 @@ void Parser::doStatement()
 
 void Parser::ifStatement()
 {
-	cout<<"ifStatement()"<<endl;
+	outFile<<"ifStatement()"<<endl;
 	match(IF);
 	guardedCommandList();
 	match(FI);
@@ -263,7 +307,7 @@ void Parser::ifStatement()
 
 void Parser::guardedCommandList()
 {
-	cout<<"guardedCommandList()"<<endl;
+	outFile<<"guardedCommandList()"<<endl;
 	guardedCommand();
 	lookAheadToken();
 	if(nextTok.getSymbol() == GC1)
@@ -275,7 +319,7 @@ void Parser::guardedCommandList()
 
 void Parser::guardedCommand()
 {
-	cout<<"guardedCommand()"<<endl;
+	outFile<<"guardedCommand()"<<endl;
 	expression();
 	match(GC2);
 	lookAheadToken();
@@ -285,7 +329,7 @@ void Parser::guardedCommand()
 
 void Parser::readStatement()
 {
-	cout<<"readStatement()"<<endl;
+	outFile<<"readStatement()"<<endl;
 	match(READ);
 	variableAccessList();
 			
@@ -293,7 +337,7 @@ void Parser::readStatement()
 
 void Parser::writeStatement()
 {
-	cout<<"writeStatement()"<<endl;
+	outFile<<"writeStatement()"<<endl;
 	match(WRITE);
 	expressionList();
 	
@@ -301,7 +345,7 @@ void Parser::writeStatement()
 }
 void Parser::assignmentStatement()
 {
-	cout<<"assignmentStatement()"<<endl;
+	outFile<<"assignmentStatement()"<<endl;
 	variableAccessList();
 	match(ASSIGN);
 	expressionList();
@@ -309,7 +353,7 @@ void Parser::assignmentStatement()
 
 void Parser::expressionList()
 {
-	cout<<"expressionList()"<<endl;
+	outFile<<"expressionList()"<<endl;
 	expression();
 	if(match(COMMA))
 	{
@@ -317,13 +361,13 @@ void Parser::expressionList()
 	}
 	else
 	{
-		cout<<"Ignore "<<endl;
+		outFile<<"Ignore "<<endl;
 	}
 }
 
 void Parser::variableAccessList()
 {
-	cout<<"variableAccessList()"<<endl;
+	outFile<<"variableAccessList()"<<endl;
 	variableAccess();
 	if(match(COMMA))
 	{
@@ -331,7 +375,7 @@ void Parser::variableAccessList()
 	}
 	else
 	{
-		cout<<"Ignore "<<endl;
+		outFile<<"Ignore "<<endl;
 	}
 	
 	
@@ -339,7 +383,7 @@ void Parser::variableAccessList()
 
 void Parser::variableAccess()
 {
-	cout<<"variableAccess()"<<endl;	
+	outFile<<"variableAccess()"<<endl;	
 	if(match(ID))
 	{
 		if(nextTok.getIDtype() != 1)
@@ -359,7 +403,7 @@ void Parser::variableAccess()
 
 void Parser::expression()
 {
-	cout<<"expression()"<<endl;	
+	outFile<<"expression()"<<endl;	
 	primaryExpression();
 	
 	lookAheadToken();
@@ -375,7 +419,7 @@ void Parser::expression()
 void Parser::primaryExpression()
 {
 
-	cout<<"primaryExpression()"<<endl;	
+	outFile<<"primaryExpression()"<<endl;	
 	simpleExpression();
 	
 	lookAheadToken();
@@ -388,20 +432,20 @@ void Parser::primaryExpression()
 
 void Parser::relationalOperator()
 {
-	cout<<"relationalOperator()"<<endl;
+	outFile<<"relationalOperator()"<<endl;
 	if(match(LESST) || match(EQUAL) || match(GREATERT) || match(LTE) || match(GTE))
 	{
-		cout<<"Ignore"<<endl;	
+		outFile<<"Ignore"<<endl;	
 	}
 	else
 	{
-		cout<<"Error msg"<< endl;
+		outFile<<"Error msg"<< endl;
 	}
 }
 
 void Parser::simpleExpression()
 {
-	cout<<"simpleExpression()"<<endl;
+	outFile<<"simpleExpression()"<<endl;
 	lookAheadToken();
 	if(!ff.firstOfTerm(nextTok))
 	{
@@ -431,21 +475,21 @@ void Parser::addopTerm()
 
 void Parser::addingOperator()
 {
-	cout<<"addingOperator()"<<endl;
+	outFile<<"addingOperator()"<<endl;
 	if(match(PLUS) || match(MINUS))
 	{
-		cout<<"Ignore"<<endl;	
+		outFile<<"Ignore"<<endl;	
 	}
 	else
 	{
-		cout<<"Error msg"<< endl;
+		outFile<<"Error msg"<< endl;
 	}
 }
 
 void Parser::term()
 {
-	cout<<"term()"<<endl;
-	cout<<"Call factor()"<<endl;
+	outFile<<"term()"<<endl;
+	outFile<<"Call factor()"<<endl;
 	factor();
 	lookAheadToken();
 	if(ff.firstOfMultOp(nextTok))
@@ -457,7 +501,7 @@ void Parser::term()
 
 void Parser::factor()
 {
-	cout<<"factor()"<<endl;
+	outFile<<"factor()"<<endl;
 	lookAheadToken();
 	if(ff.firstOfConstant(nextTok))
 	{
@@ -483,23 +527,23 @@ void Parser::factor()
 
 void Parser::multiplyingOperator()
 {
-	cout<<"multiplyingOperator()"<<endl;
+	outFile<<"multiplyingOperator()"<<endl;
 	if(match(TIMES) || match(DIV) || match(MOD))
 	{
-		cout<<"Ignore"<<endl;	
+		outFile<<"Ignore"<<endl;	
 	}
 	else
 	{
-		cout<<"Error msg"<< endl;
+		outFile<<"Error msg"<< endl;
 	}
 }
 
 void Parser::primaryOperator()
 {
-	cout<<"primaryOperator()"<<endl;
+	outFile<<"primaryOperator()"<<endl;
 	if(match(AND) || match(OR))
 	{
-		cout<<"Ignore"<<endl;
+		outFile<<"Ignore"<<endl;
 	}
 	else
 	{
@@ -509,11 +553,11 @@ void Parser::primaryOperator()
 
 void Parser::constant()
 {
-	cout<<"constant()"<<endl;
+	outFile<<"constant()"<<endl;
 	if(match(NUMERAL) || match(TRUE) || match(FALSE) || match(ID))
 	{
 		//do nothing
-		cout<<"Ignore Previous Matching errors"<<endl;		
+		outFile<<"Ignore Previous Matching errors"<<endl;		
 	}
 	
 	else
@@ -524,7 +568,7 @@ void Parser::constant()
 
 void Parser::procedureDefinition()
 {
-	cout<<"procedureDefinition()"<<endl;
+	outFile<<"procedureDefinition()"<<endl;
 	match(PROC);
 	if(match(ID))
 	{
@@ -564,16 +608,16 @@ bool Parser::match(Symbol sym)
 	if(nextTok.getSymbol() == sym)
 	{
 		//ok do nothing;	
-		//cout<<"MATCHED "<<nextTok.getSymbol()<<endl;
+		//outFile<<"MATCHED "<<nextTok.getSymbol()<<endl;
 		return true;
 	}
 	
 	else
 	{
-		cout<<"Want to match "<<nextTok.getSymbol()<<" Symbol:"<<nextTok.getLexeme() <<" But got "<<sym<<"  Error Message"<<endl;
+		outFile<<"Want to match "<<nextTok.getSymbol()<<" Symbol:"<<nextTok.getLexeme() <<" But got "<<sym<<"  Error Message"<<endl;
 		//this means a token is not matched a lookahead token is grabbed		
 		islookAheadTok = true;
-		//cout<<<<endl;
+		//outFile<<<<endl;
 		return false;
 	}
 }
@@ -615,7 +659,81 @@ void Parser::NewLine()
 	
 }
 
+//Syntex Error recovery
+void Parser::syntaxError(int code)
+{
+	switch(code)
+	{
+		case 1:
+			while(1)
+			{
+				if(ff.firstOfDefinition(nextTok) || ff.firstOfStatement(nextTok) || nextTok.getSymbol() == END 
+					|| nextTok.getSymbol() == ENDOFFILE)
+				{	
+					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					break;
+				}
+				else
+					nextTok = scanner.nextToken();
+			}
+			break;
+		case 2:
+			while(1)
+			{
+				if(nextTok.getSymbol() == SEMICOLON || nextTok.getSymbol() == DOT || ff.firstOfStatement(nextTok) 
+					|| nextTok.getSymbol() == ENDOFFILE)
+				{	
+					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					break;
+				}
+				else
+					nextTok = scanner.nextToken();
+			}
+			break;
+		case 3:
+			while(1)
+			{
+				if(ff.firstOfDefinition(nextTok) || ff.followOfDefPart(nextTok) 
+					|| nextTok.getSymbol() == ENDOFFILE)
+				{	
+					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					break;
+				}
+				else
+					nextTok = scanner.nextToken();
+			}
+			break;
+		case 4:
+			while(1)
+			{
+				if(nextTok.getSymbol() == SEMICOLON || nextTok.getSymbol() == EQUAL || ff.firstOfDefinition(nextTok) 						|| ff.followOfDefPart(nextTok) || nextTok.getSymbol() == ENDOFFILE)
+				{	
+					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					break;
+				}
+				else
+					nextTok = scanner.nextToken();
+			}
+			break;
+		case 5:
+			while(1)
+			{
+				if(nextTok.getSymbol() == SEMICOLON || ff.firstOfDefinition(nextTok) 						|| ff.followOfDefPart(nextTok) || nextTok.getSymbol() == ENDOFFILE)
+				{	
+					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					break;
+				}
+				else
+					nextTok = scanner.nextToken();
+			}
+			break;
+	}
+}
 
+void Parser::ErrorCount()
+{	
+	errorCount++;
+}	
 //write error messages to output file	
 void Parser::error(string text)
 {
