@@ -207,7 +207,13 @@ bool Firstfollow::firstOfAddOp(Token tok)
 		return false;
 }
 
-
+bool Firstfollow::firstOfExpList(Token tok)
+{
+	if(tok.getSymbol() == MINUS || firstOfTerm(tok))
+		return true;
+	else
+		return false;	
+}
 
 
 //follow
@@ -227,7 +233,18 @@ bool Firstfollow::followOfDefPart(Token tok)
 
 bool Firstfollow::followOfStatePart(Token tok)
 {
+	bool inGc = followOfGuardedCommand(tok);
+	bool isEnd = false;
+	
 	if(tok.getSymbol() == END)
+		isEnd = true;
+
+	return inGc || isEnd ;
+}
+
+bool Firstfollow::followOfGuardedCommand(Token tok)
+{
+	if(tok.getSymbol() == FI || tok.getSymbol() == OD || tok.getSymbol() == GC1)
 		return true;
 	else
 		return false;

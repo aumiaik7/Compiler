@@ -69,6 +69,8 @@ class Firstfollow
 	bool firstOfIfSt(Token tok);
 	//First of DoStatement
 	bool firstOfDoSt(Token tok);
+	//First if ExpressionList
+	bool firstOfExpList(Token tok);
 
 	
 
@@ -85,6 +87,7 @@ class Firstfollow
 	//functions for checking wheather the look ahead token is in follow of any non terminal 
 	bool followOfDefPart(Token tok);
 	bool followOfStatePart(Token tok);
+	bool followOfGuardedCommand(Token tok);
 		
 		
 		

@@ -3,7 +3,7 @@ begin
 	const n = 10;integer array A[n];
 	integer x,i; Boolean found;
 
-	proc Search
+	proc 
 	begin integer m;
 	i,m:=1,n;
 	do i<m ->
@@ -27,5 +27,5 @@ $Input Table:
 		fi;
 		read x;
 	od;
-end
+end.
 

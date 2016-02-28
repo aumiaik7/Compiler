@@ -26,6 +26,7 @@ class Parser
 	ofstream &outFile;
 	//Scanner object reference
 	Scanner &scanner;
+	// object to call method of first and follow of the non terminals of CFG of PL
 	Firstfollow ff;
 	int lineNo;
 	// report error only if correct line is true; prevents multiple/redundant error/line
@@ -34,7 +35,7 @@ class Parser
 	int errorCount;
 	//get token from scan() function	
 	Token nextTok;
-	//
+	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
 	
 	public:
@@ -44,55 +45,83 @@ class Parser
 	Parser(ifstream &in, ofstream &out, Scanner &sc);
 	~Parser() {}
 	//functions for implementing CFG
+	// program = block '.'
 	void program();
+	// block = 'begin' definitionPart statementPart 'end'
 	void block();
+	// definitionPart = {definition';'}
 	void definitionPart();
+	// definition = constantDefinition | variableDefinition | procedureDefinition
 	void definition();
-	void statementPart();
-	
+	// constantDefinition = 'const' constName '='  constant;
 	void constantDefinition();
+	// variableDefinition = typeSymbol variableList | typeSymbol 'array' variableList'['constant']'
 	void variableDefinition();
+	// procedureDefinition = 'proc' procedureName block
 	void procedureDefinition();
-
+	// typeSymbol = 'integer' | 'Boolean'
 	void typeSymbol();
+	// variableList = variableName {',' variableName}
 	void variableList();
-	
+	// statementPart = {statement';'}
+	void statementPart();
+	// statement = emptyStatement | readStatement | writeStatement |  assignmentStatement | ifStatement | doStatement 
 	void statement();
+	// readStatement = 'read' variableAccessList
 	void readStatement();
-	void writeStatement();
-	void assignmentStatement();
-	void ifStatement();
-	void doStatement();
-	void guardedCommandList();
-	void guardedCommand();
-	void expressionList();
+	// variableAccessList = variableAccess{','variableAccess}
 	void variableAccessList();
-	void variableAccess();
+	// writeStatement = 'write' expressionList  
+	void writeStatement();
+	// expressionList = expression {','expression}
+	void expressionList();
+	// assignmentStatement = variableAccessList ':=' expressionList
+	void assignmentStatement();
+	// ifStatement = 'if' guardedCommandList 'fi' 
+	void ifStatement();
+	// doStatement = 'do' guardedCommandList 'od'
+	void doStatement();
+	// guardedCommandList = guardedCommand{'[]'guardedCommand}
+	void guardedCommandList();
+	// guardedCommand = expression '->' statementPart
+	void guardedCommand();
+	// expression = primaryExpression{primaryOperator primaryExpression}	
 	void expression();
+	// primaryOperator = '&' | '|'
+	void primaryOperator();	
+	// primaryExpression = simpleExpression [relationalOperator simpleExpression]
 	void primaryExpression();
+	// relationalOperator = '<' | '=' | '>'	
 	void relationalOperator();
-	void primaryOperator();
+	// simpleExpression = ['-'] term {addingOperator term}
 	void simpleExpression();
-	void term();
-	void addopTerm();
+	// addingOperator = '+' | '-'
 	void addingOperator();
+	//helos to execute {addingOperator term}
+	void addopTerm();
+	// term = factor {multiplyingOperator factor}
+	void term();
+	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator();
+	// constant | variableAccess | '('expression')' | '~' factor	
 	void factor();
-	
-
+	// variableAccess = variableName [indexSelector]
+	void variableAccess();
+	// constanr = numeral | booleanSymbol | constantName
 	void constant();
+	
+	//this function is used to match terminal symbols of CFG
 	bool match(Symbol);
 	// Begin a new line of input
 	void NewLine();
 	// Error function for the phases
-	void error(string text);
-	//syntax error recovery
+	//void error(string text);
+	
+	//syntax error recovery function
 	void syntaxError(int);
-	// call scanner from here
-	int scan();
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
-
+	// error counter
 	void ErrorCount();
 
 	

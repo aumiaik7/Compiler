@@ -82,7 +82,8 @@ Token Scanner::nextToken()
 						idType = 2; 
 					else if(keyOrId == 294)
 						idType = 3;
-					
+					else
+						idType = 1;
 					Token tk((Symbol)keyOrId,-1,"");
 					return tk;
 				}	
