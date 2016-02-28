@@ -97,13 +97,13 @@ class Parser
 	void simpleExpression();
 	// addingOperator = '+' | '-'
 	void addingOperator();
-	//helos to execute {addingOperator term}
+	//helps to execute {addingOperator term}
 	void addopTerm();
 	// term = factor {multiplyingOperator factor}
 	void term();
 	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator();
-	// constant | variableAccess | '('expression')' | '~' factor	
+	// factor = constant | variableAccess | '('expression')' | '~' factor	
 	void factor();
 	// variableAccess = variableName [indexSelector]
 	void variableAccess();
@@ -123,6 +123,8 @@ class Parser
 	void lookAheadToken();
 	// error counter
 	void ErrorCount();
+	//parsing done
+	void done();
 
 	
 		

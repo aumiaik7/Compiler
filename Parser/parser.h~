@@ -26,6 +26,7 @@ class Parser
 	ofstream &outFile;
 	//Scanner object reference
 	Scanner &scanner;
+	// object to call method of first and follow of the non terminals of CFG of PL
 	Firstfollow ff;
 	int lineNo;
 	// report error only if correct line is true; prevents multiple/redundant error/line
@@ -96,13 +97,13 @@ class Parser
 	void simpleExpression();
 	// addingOperator = '+' | '-'
 	void addingOperator();
-	//helos to execute {addingOperator term}
+	//helps to execute {addingOperator term}
 	void addopTerm();
 	// term = factor {multiplyingOperator factor}
 	void term();
 	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator();
-	// constant | variableAccess | '('expression')' | '~' factor	
+	// factor = constant | variableAccess | '('expression')' | '~' factor	
 	void factor();
 	// variableAccess = variableName [indexSelector]
 	void variableAccess();

@@ -64,7 +64,7 @@ int Administration::scan()
 						errorCount++;
 						break;
 				default:
-					cerr<<"ERROR: Bad character found at line "<<lineNo;
+					outFile<<"ERROR: Bad character found at line "<<lineNo;
 						
 			}	
 		}

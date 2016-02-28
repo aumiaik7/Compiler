@@ -19,74 +19,67 @@ class Firstfollow
 {
 
 	private:
-	//Symbol sym;	
+	
 	
 	public:
 	//functions for checking wheather the look ahead token is in first of any non terminal 
-	//First of Definition	
+	//First of definition	
 	bool firstOfDefinition(Token tok);
-	//First of ConstantDefinition
+	//First of constantDefinition
 	bool firstOfConstDef(Token tok);
-	//First of VariableDefinition
+	//First of variableDefinition
 	bool firstOfVariDef(Token tok); 
-	//First of ProcedureDefinition	
+	//First of procedureDefinition	
 	bool firstOfProcDef(Token tok); 
-	//First of VariableList	
+	//First of variableList	
 	bool firstOfVariList(Token tok);
-	//First of StatementPart	
+	//First of statementPart	
 	bool firstOfStatePart(Token tok); 
-	//First of Statement	
+	//First of statement	
 	bool firstOfStatement(Token tok);
-	//First of EmptyStatement	
+	//First of emptyStatement	
 	bool firstOfEmptySt(Token tok);
-	//First of ReadStatement	
+	//First of readStatement	
 	bool firstOfReadSt(Token tok);
-	//First of WriteStatement
+	//First of writeStatement
 	bool firstOfWriteSt(Token tok);
-	//First of WriteStatement
+	//First of procedureStatement
 	bool firstOfProcSt(Token tok);
-	//First of AssignmentStatement
+	//First of assignmentStatement
 	bool firstOfAssignSt(Token tok);
-	//First of VariableAccessList
+	//First of variableAccessList
 	bool firstOfVAList(Token tok);	
-	//First of IndexSelector
+	//First of indexSelector
 	bool firstOfIndexSel(Token tok);
-	//First of PrimaryOperator
+	//First of primaryOperator
 	bool firstOfPrimOp(Token tok);
-	//First of Term
+	//First of term
 	bool firstOfTerm(Token tok);
-	//First of Factor
+	//First of factor
 	bool firstOfFactor(Token tok);
-	//First of Constant
+	//First of constant
 	bool firstOfConstant(Token tok);
-	//First of RelationalOperator
+	//First of relationalOperator
 	bool firstOfRelOp(Token tok);
-	//First of MultiplyingOperator
+	//First of multiplyingOperator
 	bool firstOfMultOp(Token tok);
-	//First of AddingOperator
+	//First of addingOperator
 	bool firstOfAddOp(Token tok);
-	//First of IfStatement
+	//First of ifStatement
 	bool firstOfIfSt(Token tok);
-	//First of DoStatement
+	//First of doStatement
 	bool firstOfDoSt(Token tok);
-	//First if ExpressionList
+	//First if expressionList
 	bool firstOfExpList(Token tok);
 
-	
-
-
-
-
-
-	
-
-
-		
 
 
 	//functions for checking wheather the look ahead token is in follow of any non terminal 
+	//follow of definitionPart
 	bool followOfDefPart(Token tok);
+	//follow of statementPart	
 	bool followOfStatePart(Token tok);
+	//follow of guardedCommand
 	bool followOfGuardedCommand(Token tok);
 		
 		

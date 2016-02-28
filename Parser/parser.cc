@@ -27,9 +27,9 @@ void Parser::program()
 		ErrorCount();	
 	}
 
-	//shows total no of lines parsed at the end
-	outFile<<"Total no of lines: "<<lineNo<<endl;
-	
+	//parsing done
+	done();
+		
 }
 
 // block = 'begin' definitionPart statementPart 'end'
@@ -61,6 +61,7 @@ void Parser::block()
 		ErrorCount();
 	}
 
+	//this portion matches end and if not matched the shows corresponding error message
 	if(!match(END))
 	{
 		//error message		
@@ -121,6 +122,7 @@ void Parser::constantDefinition()
 	
 	if(match(ID))
 	{
+		//id of type 2 is of constant type. if not matched the shows the corresponding error message 
 		if(nextTok.getIDtype() != 2)
 		{	
 			//error message
@@ -131,13 +133,15 @@ void Parser::constantDefinition()
 	}
 	else
 	{
-			cerr<<"Syntax Error: "<<" constantName is missing at line "<< lineNo <<endl;
-			ErrorCount();
-			syntaxError(4);
+		//error message
+		cerr<<"Syntax Error: "<<" constantName is missing at line "<< lineNo <<endl;
+		ErrorCount();
+		syntaxError(4);
 	}
-	//outFile<<"Matched ="<<endl;	
+		
 	if(!match(EQUAL))
 	{
+		//error message
 		cerr<<"Syntax Error: "<<" '=' is missing at line "<< lineNo <<endl;
 		ErrorCount();
 		syntaxError(5);
@@ -335,8 +339,7 @@ void Parser::statement()
 	
 }
 
-//
-
+// readStatement = 'read' variableAccessList
 void Parser::readStatement()
 {
 	outFile<<"readStatement()"<<endl;
@@ -345,22 +348,52 @@ void Parser::readStatement()
 			
 }
 
+// variableAccessList = variableAccess{','variableAccess}
+void Parser::variableAccessList()
+{
+	outFile<<"variableAccessList()"<<endl;
+	variableAccess();
+	if(match(COMMA))
+	{
+		variableAccessList();
+	}
+}
+
+// writeStatement = 'write' expressionList  
 void Parser::writeStatement()
 {
 	outFile<<"writeStatement()"<<endl;
 	match(WRITE);
 	expressionList();
-	
-		
-}
-void Parser::doStatement()
-{
-	outFile<<"doStatement()"<<endl;
-	match(DO);
-	guardedCommandList();
-	match(OD);
 }
 
+// expressionList = expression {','expression}
+void Parser::expressionList()
+{
+	outFile<<"expressionList()"<<endl;
+	expression();
+	if(match(COMMA))
+	{
+		expressionList();
+	}
+	
+}
+
+// assignmentStatement = variableAccessList ':=' expressionList
+void Parser::assignmentStatement()
+{
+	outFile<<"assignmentStatement()"<<endl;
+	variableAccessList();
+	if(!match(ASSIGN))
+	{
+		cerr<<"Syntax Error: "<<" ':=' is missing at line "<< lineNo <<endl;
+		ErrorCount();
+		syntaxError(11);
+	}	
+	expressionList();
+}
+
+// ifStatement = 'if' guardedCommandList 'fi' 
 void Parser::ifStatement()
 {
 	outFile<<"ifStatement()"<<endl;
@@ -375,6 +408,16 @@ void Parser::ifStatement()
 	
 }
 
+// doStatement = 'do' guardedCommandList 'od'
+void Parser::doStatement()
+{
+	outFile<<"doStatement()"<<endl;
+	match(DO);
+	guardedCommandList();
+	match(OD);
+}
+
+// guardedCommandList = guardedCommand{'[]'guardedCommand}
 void Parser::guardedCommandList()
 {
 	outFile<<"guardedCommandList()"<<endl;
@@ -388,6 +431,7 @@ void Parser::guardedCommandList()
 	
 }
 
+// guardedCommand = expression '->' statementPart
 void Parser::guardedCommand()
 {
 	outFile<<"guardedCommand()"<<endl;
@@ -402,83 +446,7 @@ void Parser::guardedCommand()
 	statementPart();
 }
 
-
-
-void Parser::assignmentStatement()
-{
-	outFile<<"assignmentStatement()"<<endl;
-	variableAccessList();
-	if(!match(ASSIGN))
-	{
-		cerr<<"Syntax Error: "<<" ':=' is missing at line "<< lineNo <<endl;
-		ErrorCount();
-		syntaxError(11);
-	}	
-	expressionList();
-}
-
-void Parser::expressionList()
-{
-	outFile<<"expressionList()"<<endl;
-	expression();
-	if(match(COMMA))
-	{
-		expressionList();
-	}
-	else
-	{
-		//outFile<<"Ignore "<<endl;
-	}
-}
-
-void Parser::variableAccessList()
-{
-	outFile<<"variableAccessList()"<<endl;
-	variableAccess();
-	if(match(COMMA))
-	{
-		variableAccessList();
-	}
-	else
-	{
-		//outFile<<"Ignore "<<endl;
-	}
-	
-	
-}
-
-void Parser::variableAccess()
-{
-	outFile<<"variableAccess()"<<endl;	
-	if(match(ID))
-	{
-		if(nextTok.getIDtype() != 1)
-		{	
-			//error message
-			cerr<<"Syntax Error: "<<"expecting name of variable type at line "<< lineNo <<endl;
-			ErrorCount();
-		}
-	}
-	else
-	{
-		cerr<<"Syntax Error: "<<" variable name is missing at line "<< lineNo <<endl;
-		ErrorCount();
-		syntaxError(10);
-	}
-	lookAheadToken();
-	if(ff.firstOfIndexSel(nextTok))
-	{
-		match(LEFTBRACKET);
-		expression();
-		if(!match(RIGHTBRACKET))
-		{
-			cerr<<"Syntax Error: "<<" ']' is missing at line "<< lineNo <<endl;
-			ErrorCount();
-			syntaxError(12);
-		}
-	}
-}
-
+// expression = primaryExpression{primaryOperator primaryExpression}	
 void Parser::expression()
 {
 	outFile<<"expression()"<<endl;	
@@ -489,15 +457,22 @@ void Parser::expression()
 	{
 		primaryOperator();
 		expression();
-		
-				
 	}
-	
 }
 
+// primaryOperator = '&' | '|'
+void Parser::primaryOperator()
+{
+	outFile<<"primaryOperator()"<<endl;
+	if(match(AND) || match(OR))
+	{
+		
+	}
+}
+
+// primaryExpression = simpleExpression [relationalOperator simpleExpression]
 void Parser::primaryExpression()
 {
-
 	outFile<<"primaryExpression()"<<endl;	
 	simpleExpression();
 	
@@ -509,15 +484,17 @@ void Parser::primaryExpression()
 	}
 }	
 
+// relationalOperator = '<' | '=' | '>'	
 void Parser::relationalOperator()
 {
 	outFile<<"relationalOperator()"<<endl;
 	if(match(LESST) || match(EQUAL) || match(GREATERT) || match(LTE) || match(GTE))
 	{
-		//outFile<<"Ignore"<<endl;	
+		
 	}
 }
 
+// simpleExpression = ['-'] term {addingOperator term}
 void Parser::simpleExpression()
 {
 	outFile<<"simpleExpression()"<<endl;
@@ -531,23 +508,11 @@ void Parser::simpleExpression()
 	if(ff.firstOfAddOp(nextTok))
 	{
 		addopTerm();
-				
 	}
 	
 }
 
-void Parser::addopTerm()
-{
-	lookAheadToken();
-	if(ff.firstOfAddOp(nextTok))
-	{
-		addingOperator();
-		term();
-		addopTerm();
-	}
-	
-}
-
+// addingOperator = '+' | '-'
 void Parser::addingOperator()
 {
 	outFile<<"addingOperator()"<<endl;
@@ -561,6 +526,20 @@ void Parser::addingOperator()
 	}
 }
 
+//helps to execute {addingOperator term}
+void Parser::addopTerm()
+{
+	lookAheadToken();
+	if(ff.firstOfAddOp(nextTok))
+	{
+		addingOperator();
+		term();
+		addopTerm();
+	}
+	
+}
+
+// term = factor {multiplyingOperator factor}
 void Parser::term()
 {
 	outFile<<"term()"<<endl;
@@ -574,6 +553,18 @@ void Parser::term()
 	}
 }
 
+// multiplyingOperator = '*' | '/' | '\'
+void Parser::multiplyingOperator()
+{
+	outFile<<"multiplyingOperator()"<<endl;
+	if(match(TIMES) || match(DIV) || match(MOD))
+	{
+		
+	}
+	
+}
+
+//factor = constant | variableAccess | '('expression')' | '~' factor	
 void Parser::factor()
 {
 	outFile<<"factor()"<<endl;
@@ -592,6 +583,7 @@ void Parser::factor()
 		expression();	
 		if(!match(RIGHTP))
 		{
+			//error msg			
 			cerr<<"Syntax Error: "<<" ')' is missing at line "<< lineNo <<endl;
 			ErrorCount();
 			syntaxError(12);
@@ -605,39 +597,47 @@ void Parser::factor()
 		
 }
 
-void Parser::multiplyingOperator()
+//variableAccess = variableName [indexSelector]
+void Parser::variableAccess()
 {
-	outFile<<"multiplyingOperator()"<<endl;
-	if(match(TIMES) || match(DIV) || match(MOD))
+	outFile<<"variableAccess()"<<endl;	
+	if(match(ID))
 	{
-		outFile<<"Ignore"<<endl;	
+		if(nextTok.getIDtype() != 1)
+		{	
+			//error message
+			cerr<<"Syntax Error: "<<"expecting name of variable type at line "<< lineNo <<endl;
+			ErrorCount();
+		}
 	}
 	else
 	{
-		outFile<<"Error msg"<< endl;
+		//error msg		
+		cerr<<"Syntax Error: "<<" variable name is missing at line "<< lineNo <<endl;
+		ErrorCount();
+		syntaxError(10);
+	}
+	lookAheadToken();
+	if(ff.firstOfIndexSel(nextTok))
+	{
+		match(LEFTBRACKET);
+		expression();
+		if(!match(RIGHTBRACKET))
+		{
+			//error msg			
+			cerr<<"Syntax Error: "<<" ']' is missing at line "<< lineNo <<endl;
+			ErrorCount();
+			syntaxError(12);
+		}
 	}
 }
 
-void Parser::primaryOperator()
-{
-	outFile<<"primaryOperator()"<<endl;
-	if(match(AND) || match(OR))
-	{
-		outFile<<"Ignore"<<endl;
-	}
-	else
-	{
-		//error message
-	}
-}
-
+// constanr = numeral | booleanSymbol | constantName
 void Parser::constant()
 {
 	outFile<<"constant()"<<endl;
 	if(match(NUMERAL) || match(TRUE) || match(FALSE) || match(ID))
 	{
-		//do nothing
-		//outFile<<"Ignore Previous Matching errors"<<endl;	
 		if(nextTok.getSymbol() == ID && nextTok.getIDtype() != 2)
 		{
 			cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
@@ -646,9 +646,10 @@ void Parser::constant()
 	}
 	
 	else
-	{	//error msg
+	{	
 		if(nextTok.getSymbol()!=ID)
 		{
+			//error msg				
 			cerr<<"Syntax Error: "<<" Expecting numeral/boolean symbol at line "<< lineNo <<endl;
 			ErrorCount();
 			syntaxError(8);
@@ -658,20 +659,23 @@ void Parser::constant()
 }
 
 
-//function for matching terminal symbols
+//this function is used to match terminal symbols of CFG
 bool Parser::match(Symbol sym)
 {
+	//look ahead token flag is disable is currently eanble and dont 
+	//grab a new token as already grabbed using lookAheadToken() 
 	if(islookAheadTok)
 		islookAheadTok = false;
 	else	
 		nextTok = scanner.nextToken();
 
 	//grab the token other than newline or noname
-	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME)
+	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME || nextTok.getSymbol() == EOF)
 	{		
 		
 		while(1)
 		{	
+			//newline detected			
 			if(nextTok.getSymbol() == NEWLINE)
 			{
 				NewLine();
@@ -683,19 +687,18 @@ bool Parser::match(Symbol sym)
 		
 	}
 	
+	//it means the token is matched returns true
 	if(nextTok.getSymbol() == sym)
 	{
-		//ok do nothing;	
-		//outFile<<"MATCHED "<<nextTok.getSymbol()<<endl;
 		return true;
 	}
 	
+	//not matched returns false
 	else
 	{
-		outFile<<"Want to match "<<nextTok.getSymbol()<<" Symbol:"<<nextTok.getLexeme() <<" But got "<<sym<<"  Error Message"<<endl;
+		
 		//this means a token is not matched a lookahead token is grabbed		
 		islookAheadTok = true;
-		//outFile<<<<endl;
 		return false;
 	}
 }
@@ -712,11 +715,12 @@ void Parser::lookAheadToken()
 	}
 	
 	//grab the token other than newline or noname
-	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME)
+	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME || nextTok.getSymbol() == EOF)
 	{		
 		
 		while(1)
 		{	
+			//newline detected
 			if(nextTok.getSymbol() == NEWLINE)
 			{
 				NewLine();
@@ -733,11 +737,14 @@ void Parser::lookAheadToken()
 void Parser::NewLine()
 {
 	lineNo++;
-	//outFile<<"\n"<<"Line "<<lineNo<<":";	
-	
 }
 
 //Syntex Error recovery
+// when any error occured corresponding error msg is displayed and 
+// we try find the next possible symbol (stop symbol) that can occur
+// after the error. For different kinds of terminal symbol stop 
+// symbols are different. The different sets of stop symbols finding
+// is done in this switch cases  
 void Parser::syntaxError(int code)
 {
 	switch(code)
@@ -748,12 +755,11 @@ void Parser::syntaxError(int code)
 				if(ff.firstOfDefinition(nextTok) || ff.firstOfStatement(nextTok) || nextTok.getSymbol() == END 
 					|| nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -768,12 +774,11 @@ void Parser::syntaxError(int code)
 				if(nextTok.getSymbol() == SEMICOLON || nextTok.getSymbol() == DOT || ff.firstOfStatement(nextTok) 
 					|| nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -788,12 +793,11 @@ void Parser::syntaxError(int code)
 				if(ff.firstOfDefinition(nextTok) || ff.followOfDefPart(nextTok) 
 					|| nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -807,12 +811,11 @@ void Parser::syntaxError(int code)
 			{
 				if(nextTok.getSymbol() == SEMICOLON || nextTok.getSymbol() == EQUAL || ff.firstOfDefinition(nextTok) 						|| ff.followOfDefPart(nextTok) || nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -826,12 +829,11 @@ void Parser::syntaxError(int code)
 			{
 				if(nextTok.getSymbol() == SEMICOLON || ff.firstOfDefinition(nextTok) 						|| ff.followOfDefPart(nextTok) || nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -846,12 +848,11 @@ void Parser::syntaxError(int code)
 			{
 				if(nextTok.getSymbol() == SEMICOLON || ff.firstOfDefinition(nextTok) 						|| ff.firstOfConstant(nextTok) || ff.followOfDefPart(nextTok) || nextTok.getSymbol() == 							ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -865,12 +866,11 @@ void Parser::syntaxError(int code)
 			{
 				if(ff.followOfDefPart(nextTok) || ff.followOfStatePart(nextTok) || nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<" Lexeme: "<< nextTok.getLexeme()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<" Lexeme: "<< nextTok.getLexeme()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -886,12 +886,11 @@ void Parser::syntaxError(int code)
 					|| ff.firstOfDefinition(nextTok) || ff.followOfDefPart(nextTok) 
 					|| nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -905,12 +904,11 @@ void Parser::syntaxError(int code)
 			{
 				if(nextTok.getSymbol() == BEGIN || nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -925,12 +923,11 @@ void Parser::syntaxError(int code)
 				if(nextTok.getSymbol() == SEMICOLON || ff.followOfDefPart(nextTok)
 					||  nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -945,12 +942,11 @@ void Parser::syntaxError(int code)
 				if(nextTok.getSymbol() == SEMICOLON || ff.firstOfExpList(nextTok)
 					||  nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -965,12 +961,11 @@ void Parser::syntaxError(int code)
 					||nextTok.getSymbol() == RIGHTBRACKET ||nextTok.getSymbol() == RIGHTP  
 					|| ff.firstOfExpList(nextTok) ||  nextTok.getSymbol() == ENDOFFILE)
 				{	
-					cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
+					//cout<<"Stopped At: "<< nextTok.getSymbol()<<endl;				
 					break;
 				}
 				else
 				{
-					//islookAheadTok = false;				
 					nextTok = scanner.nextToken();
 					if(nextTok.getSymbol() == NEWLINE)
 					{
@@ -988,7 +983,24 @@ void Parser::syntaxError(int code)
 void Parser::ErrorCount()
 {	
 	errorCount++;
+	if(errorCount >= MAXERRORS)
+	{
+		cerr<<"Too many errors. Bailing out!!\n";
+		outFile<<"Too many errors. Bailed out!!";
+		srcFile.close();
+		outFile.close();
+		exit(0);
+	}
+	
 }	
+void Parser::done()
+{
+	cout<<endl<<"<<<Parsing Done>>>"<<endl;
+	cout<<"The methods called for nonterminals are showed in ParseOutFile "<<endl;
+	outFile<<"Total no of lines: "<<lineNo<<endl;
+	srcFile.close();
+	outFile.close();
+}
 //write error messages to output file	
 //void Parser::error(string text)
 //{
