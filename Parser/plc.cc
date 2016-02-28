@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 	else
 	{
 		cout<<"\n<<<Scanning Result>>>\nError occured!"<<endl;
-		cout<<"Program contains lexical error. Please correct those to perform syntactic analysis"<<endl;
+		cout<<"Program contains lexical error. Please correct those to perform syntax analysis"<<endl;
 	}
 
 

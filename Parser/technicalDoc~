@@ -82,7 +82,7 @@ Error recovery is an important part of syntax analysis. As our parser is recursi
 
 syntaxError(int) method: This method is used for error recovery. It is implemented using switch case structure. When we try to match any terminal symbol and fail then we call this method and pass corresponding code. Based on the code the code block of corresponding case is executed. In the case we continue to grab tokens until we reach to any of the stop symbols for the symbol which occured error. EOF is always in stop symbol set as we must stop at eof otherwise the parser will fall in loop. 
 
-We tried to recover from error as many as possible but sometimes the parser might not recover properly. It may not recover if the structure of program is very bad. It still will show some errors but will not be able to parse through last line. But in most of the case it error recovery scheme we implemented is good enough to recover from error and parse through the last line of the source file.    
+We tried to recover from error as many as possible but sometimes the parser might not recover properly. It may not recover if the structure of program is very bad. It still will show some errors but will not be able to parse through last line. But in most of the case it error recovery scheme we implemented is good enough to recover and parse through the last line of the source file.    
 	
 
 Lexical Analysis:
