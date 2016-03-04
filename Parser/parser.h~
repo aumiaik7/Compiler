@@ -134,7 +134,7 @@ class Parser
 	
 		
 };
-//vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2);
-//vector<Symbol> operator+(vector<Symbol> stops, Symbol sym);
+vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2);
+vector<Symbol> operator+(vector<Symbol> stops, Symbol sym);
 
 #endif

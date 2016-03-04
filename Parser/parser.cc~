@@ -664,6 +664,8 @@ bool Parser::in(vector<Symbol> set)
 	{
 		if(nextTok.getSymbol() == set.at(i))
 			return true;
+		else
+			cout<<"milenai"<<set.at(i)<<endl;
 	}
 	
 	return false;

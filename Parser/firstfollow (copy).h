@@ -24,67 +24,66 @@ class Firstfollow
 	public:
 	//functions for checking wheather the look ahead token is in first of any non terminal 
 	//First of definition	
-	vector<Symbol> firstOfDefinition();
+	bool firstOfDefinition(Token tok);
 	//First of constantDefinition
-	vector<Symbol> firstOfConstDef();
+	bool firstOfConstDef(Token tok);
 	//First of variableDefinition
-	vector<Symbol> firstOfVariDef(); 
+	bool firstOfVariDef(Token tok); 
 	//First of procedureDefinition	
-	vector<Symbol> firstOfProcDef(); 
+	bool firstOfProcDef(Token tok); 
 	//First of variableList	
-	vector<Symbol> firstOfVariList();
+	bool firstOfVariList(Token tok);
 	//First of statementPart	
-	vector<Symbol> firstOfStatePart(); 
+	bool firstOfStatePart(Token tok); 
 	//First of statement	
-	vector<Symbol> firstOfStatement();
+	bool firstOfStatement(Token tok);
 	//First of emptyStatement	
-	vector<Symbol> firstOfEmptySt();
+	bool firstOfEmptySt(Token tok);
 	//First of readStatement	
-	vector<Symbol> firstOfReadSt();
+	bool firstOfReadSt(Token tok);
 	//First of writeStatement
-	vector<Symbol> firstOfWriteSt();
+	bool firstOfWriteSt(Token tok);
 	//First of procedureStatement
-	vector<Symbol> firstOfProcSt();
+	bool firstOfProcSt(Token tok);
 	//First of assignmentStatement
-	vector<Symbol> firstOfAssignSt();
+	bool firstOfAssignSt(Token tok);
 	//First of variableAccessList
-	vector<Symbol> firstOfVAList();	
+	bool firstOfVAList(Token tok);	
 	//First of indexSelector
-	vector<Symbol> firstOfIndexSel();
+	bool firstOfIndexSel(Token tok);
 	//First of primaryOperator
-	vector<Symbol> firstOfPrimOp();
+	bool firstOfPrimOp(Token tok);
 	//First of term
-	vector<Symbol> firstOfTerm();
+	bool firstOfTerm(Token tok);
 	//First of factor
-	vector<Symbol> firstOfFactor();
+	bool firstOfFactor(Token tok);
 	//First of constant
-	vector<Symbol> firstOfConstant();
+	bool firstOfConstant(Token tok);
 	//First of relationalOperator
-	vector<Symbol> firstOfRelOp();
+	bool firstOfRelOp(Token tok);
 	//First of multiplyingOperator
-	vector<Symbol> firstOfMultOp();
+	bool firstOfMultOp(Token tok);
 	//First of addingOperator
-	vector<Symbol> firstOfAddOp();
+	bool firstOfAddOp(Token tok);
 	//First of ifStatement
-	vector<Symbol> firstOfIfSt();
+	bool firstOfIfSt(Token tok);
 	//First of doStatement
-	vector<Symbol> firstOfDoSt();
+	bool firstOfDoSt(Token tok);
 	//First if expressionList
-	vector<Symbol> firstOfExpList();
+	bool firstOfExpList(Token tok);
 
 
 
 	//functions for checking wheather the look ahead token is in follow of any non terminal 
 	//follow of definitionPart
-	vector<Symbol> followOfDefPart();
+	bool followOfDefPart(Token tok);
 	//follow of statementPart	
-	vector<Symbol> followOfStatePart();
+	bool followOfStatePart(Token tok);
 	//follow of guardedCommand
-	vector<Symbol> followOfGuardedCommand();
+	bool followOfGuardedCommand(Token tok);
 		
 		
 		
 };
 
-vector<Symbol> operator+(vector<Symbol> , vector<Symbol> );
 #endif
