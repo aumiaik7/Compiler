@@ -37,10 +37,8 @@ class Parser
 	Token nextTok;
 	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
-	//Stop symbols holder
-	vector<Symbol> st;
-	public:
 	
+	public:
 	//flag for printing symbol table
 	bool printSymbolTable;
 	// Set up input and output files for scanning
@@ -50,7 +48,7 @@ class Parser
 	// program = block '.'
 	void program();
 	// block = 'begin' definitionPart statementPart 'end'
-	void block(vector<Symbol> stops);
+	void block();
 	// definitionPart = {definition';'}
 	void definitionPart();
 	// definition = constantDefinition | variableDefinition | procedureDefinition
@@ -119,8 +117,7 @@ class Parser
 	// Error function for the phases
 	//void error(string text);
 	
-	//syntax error recovery function
-	void syntaxError(int);
+	
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
 	// error counter
@@ -131,7 +128,5 @@ class Parser
 	
 		
 };
-int operator+(vector<Symbol>& stops, vector<Symbol> newStops);
-vector<Symbol> operator+(vector<Symbol> stops, Symbol sym);
 
 #endif

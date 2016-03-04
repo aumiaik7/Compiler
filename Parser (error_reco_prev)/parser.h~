@@ -37,7 +37,8 @@ class Parser
 	Token nextTok;
 	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
-	
+	//
+	vector<Symbol>
 	public:
 	//flag for printing symbol table
 	bool printSymbolTable;
@@ -117,12 +118,13 @@ class Parser
 	// Error function for the phases
 	//void error(string text);
 	
-	//syntax error recovery function
-	void syntaxError(int);
+	
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
 	// error counter
 	void ErrorCount();
+	//parsing done
+	void done();
 
 	
 		
