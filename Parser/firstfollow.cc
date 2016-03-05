@@ -243,7 +243,7 @@ vector<Symbol> Firstfollow::firstOfAddOp()
 vector<Symbol> Firstfollow::firstOfExpList()
 {
 	vector<Symbol> fOfExpList;
-	fOfExpList.push_back(PLUS);
+	fOfExpList.push_back(MINUS);
 	
 	vector<Symbol> fOfTerm = firstOfTerm();
 	
@@ -288,6 +288,7 @@ vector<Symbol> Firstfollow::followOfGuardedCommand()
 vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2)
 {
 	vector<Symbol> mergedSet;
+
 	mergedSet.reserve(set1.size() + set2.size());
 	mergedSet.insert(mergedSet.end(), set1.begin(), set1.end());
 	mergedSet.insert(mergedSet.end(), set2.begin(), set2.end());

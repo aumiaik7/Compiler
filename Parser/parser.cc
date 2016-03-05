@@ -5,6 +5,7 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),islookAheadTok(false)
 {
 	st.push_back(ENDOFFILE);
+	lookAheadToken();	
 }
 
 /*
@@ -46,7 +47,7 @@ void Parser::block(vector<Symbol> stops)
 	outFile<<"block()"<<endl;
 	match(BEGIN);
 	
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfDefinition()))
 	{	
 		definitionPart();
@@ -73,12 +74,17 @@ void Parser::definitionPart()
 	
 	outFile<<"definitionPart()"<<endl;
 	
-	lookAheadToken();	
+	//lookAheadToken();	
 	if(in(ff.firstOfDefinition()))
 	{
 		definition();
 		match(SEMICOLON);
 		definitionPart();
+	}
+	else if(in(ff.followOfDefPart()))
+	{
+		outFile<<"LATOK" << nextTok.getSymbol()<<" Lexeme "<<nextTok.getLexeme()<<endl;
+		statementPart();
 	}
 		
 }
@@ -88,7 +94,7 @@ void Parser::definition()
 {
 	outFile<<"definition()"<<endl;
 	
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfConstDef()))
 	{
 		constantDefinition();
@@ -133,7 +139,7 @@ void Parser::variableDefinition()
 {
 	outFile<<"variableDefinition()"<<endl;	
 	typeSymbol();
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfVariList()))
 	{
 		variableList();
@@ -189,7 +195,7 @@ void Parser::variableList()
 		}
 		
 	}
-	//lookAheadToken();
+	////lookAheadToken();
 	if(match(COMMA))
 	{
 		variableList();
@@ -202,7 +208,7 @@ void Parser::variableList()
 void Parser::statementPart()
 {
 	outFile<<"statementPart()"<<endl;
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfStatement()))
 	{
 		statement();
@@ -212,6 +218,7 @@ void Parser::statementPart()
 	else if(in(ff.followOfStatePart()))
 	{
 		//do nothing
+		cout<<"Eikhane "<<endl;
 	}
 	
 }
@@ -220,7 +227,7 @@ void Parser::statementPart()
 void Parser::statement()
 {
 	outFile<<"statement()"<<endl;
-	lookAheadToken();	
+	//lookAheadToken();	
 	if(in(ff.firstOfEmptySt()))
 	{
 		match(SKIP);
@@ -333,7 +340,7 @@ void Parser::guardedCommandList()
 {
 	outFile<<"guardedCommandList()"<<endl;
 	guardedCommand();
-	lookAheadToken();
+	//lookAheadToken();
 	if(nextTok.getSymbol() == GC1)
 	{
 		match(GC1);
@@ -348,7 +355,7 @@ void Parser::guardedCommand()
 	outFile<<"guardedCommand()"<<endl;
 	expression();
 	match(GC2);
-	lookAheadToken();
+	//lookAheadToken();
 	statementPart();
 }
 
@@ -358,7 +365,7 @@ void Parser::expression()
 	outFile<<"expression()"<<endl;	
 	primaryExpression();
 	
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfPrimOp()))
 	{
 		primaryOperator();
@@ -382,7 +389,7 @@ void Parser::primaryExpression()
 	outFile<<"primaryExpression()"<<endl;	
 	simpleExpression();
 	
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfRelOp()))
 	{
 		relationalOperator();
@@ -404,13 +411,13 @@ void Parser::relationalOperator()
 void Parser::simpleExpression()
 {
 	outFile<<"simpleExpression()"<<endl;
-	lookAheadToken();
+	//lookAheadToken();
 	if(!in(ff.firstOfTerm()))
 	{
 		match(MINUS);	
 	}
 	term();
-	lookAheadToken();	
+	//lookAheadToken();	
 	if(in(ff.firstOfAddOp()))
 	{
 		addopTerm();
@@ -435,7 +442,7 @@ void Parser::addingOperator()
 //helps to execute {addingOperator term}
 void Parser::addopTerm()
 {
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfAddOp()))
 	{
 		addingOperator();
@@ -451,7 +458,7 @@ void Parser::term()
 	outFile<<"term()"<<endl;
 	outFile<<"Call factor()"<<endl;
 	factor();
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfMultOp()))
 	{
 		multiplyingOperator();
@@ -474,7 +481,7 @@ void Parser::multiplyingOperator()
 void Parser::factor()
 {
 	outFile<<"factor()"<<endl;
-	lookAheadToken();
+	//lookAheadToken();
 	if(nextTok.getSymbol() == ID)
 	{
 		if(nextTok.getIDtype() == 1)
@@ -522,7 +529,7 @@ void Parser::variableAccess()
 		}
 	}
 	
-	lookAheadToken();
+	//lookAheadToken();
 	if(in(ff.firstOfIndexSel()))
 	{
 		match(LEFTBRACKET);
@@ -551,14 +558,14 @@ void Parser::constant()
 bool Parser::match(Symbol sym)
 {
 	//look ahead token flag is disable is currently eanble and dont 
-	//grab a new token as already grabbed using lookAheadToken() 
-	if(islookAheadTok)
-		islookAheadTok = false;
-	else	
-		nextTok = scanner.nextToken();
+	//grab a new token as already grabbed using //lookAheadToken() 
+	//if(islookAheadTok)
+	//	islookAheadTok = false;
+	//else	
+	//	nextTok = scanner.nextToken();
 
 	//grab the token other than newline or noname
-	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME || nextTok.getSymbol() == EOF)
+	/*if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME )
 	{		
 		
 		while(1)
@@ -574,10 +581,28 @@ bool Parser::match(Symbol sym)
 		}
 		
 	}
-	
+	*/
 	//it means the token is matched returns true
 	if(nextTok.getSymbol() == sym)
 	{
+		outFile<<"Matched" << nextTok.getSymbol()<<" Lexeme "<<nextTok.getLexeme()<<endl;
+		nextTok = scanner.nextToken();
+		if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME )
+		{		
+		
+			while(1)
+			{	
+				//newline detected			
+				if(nextTok.getSymbol() == NEWLINE)
+				{
+					NewLine();
+				}
+				else if(nextTok.getSymbol() != NONAME)
+					break;
+				nextTok = scanner.nextToken();
+			}
+		
+		}	
 		//outFile<<"Matched" << nextTok.getSymbol()<<endl;
 		return true;
 	}
@@ -592,19 +617,21 @@ bool Parser::match(Symbol sym)
 	}
 }
 
+
 void Parser::lookAheadToken()
 {
 	//this checking is done so that parser will not stuck in error. 
 	//if any token is already read it will not read another token again.
 	//if not read then it will grab a token 	
-	if(!islookAheadTok)
+	/*if(!islookAheadTok)
 	{
 		nextTok = scanner.nextToken();	
 		islookAheadTok = true;
 	}
-	
+	*/
+	nextTok = scanner.nextToken();	
 	//grab the token other than newline or noname
-	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME || nextTok.getSymbol() == EOF)
+	if(nextTok.getSymbol() == NEWLINE || nextTok.getSymbol() == NONAME )
 	{		
 		
 		while(1)
@@ -697,4 +724,5 @@ bool Parser::in(vector<Symbol> set)
 //{
 	
 //}	
+
 
