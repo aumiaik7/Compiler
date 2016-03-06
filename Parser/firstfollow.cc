@@ -306,3 +306,15 @@ vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2)
 	return mergedSet;
 
 }
+
+//+ operator overloading for vector
+vector<Symbol> operator-(vector<Symbol> set, Symbol sym)
+{
+	for(int i = 0; i < set.size(); i++)
+	{
+		if (sym == set.at(i))
+			set.at(i) = NONAME;
+	}
+	return set;
+
+}	

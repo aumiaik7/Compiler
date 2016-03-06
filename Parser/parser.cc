@@ -4,6 +4,7 @@
 Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),islookAheadTok(false)
 {
+	agc = false;
 	lookAheadToken();
 }
 
@@ -89,6 +90,8 @@ void Parser::definitionPart(vector<Symbol> stops)
 		match(SEMICOLON , stops + ff.firstOfDefinition());
 		definitionPart(stops);
 	}
+	else
+		syntaxCheck(stops);
 	
 		
 }
@@ -247,6 +250,10 @@ void Parser::variableList(vector<Symbol> stops)
 		match(COMMA, ff.firstOfVAList() + stops);
 		variableList(stops);
 	}
+	else
+	{
+		syntaxCheck(stops - ID);
+	}
 	
 	
 }
@@ -257,7 +264,8 @@ void Parser::statementPart(vector<Symbol> stops)
 	outFile<<"statementPart()"<<endl;
 	//lookAheadToken();
 	if(in(ff.firstOfStatement()))
-	{		
+	{	
+		vector<Symbol>().swap(stopSet);	
 		stopSet.push_back(SEMICOLON);
 		
 		statement(stopSet + stops);
@@ -268,6 +276,8 @@ void Parser::statementPart(vector<Symbol> stops)
 	{
 		//do nothing
 	}
+	else
+		syntaxCheck(stops);
 	
 }
 
@@ -353,6 +363,8 @@ void Parser::variableAccessList(vector<Symbol> stops)
 		match(COMMA, ff.firstOfVAList() + stops);
 		variableList(stops);
 	}
+	else
+		syntaxCheck(stops - ID);		
 }
 
 // writeStatement = 'write' expressionList  
@@ -378,6 +390,8 @@ void Parser::expressionList(vector<Symbol> stops)
 		match(COMMA, ff.firstOfExpList() + stops);
 		expressionList(stops);
 	}
+	else
+		syntaxCheck(stops - ID);
 		
 }
 
@@ -388,9 +402,10 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ASSIGN);
-	
+	//agc = true;
 	variableAccessList(stopSet + stops);
-	match(ASSIGN, ff.firstOfExpList() + stops);	
+	match(ASSIGN, ff.firstOfExpList() + stops);
+	//agc = false;	
 	expressionList(stops);
 }
 
@@ -428,6 +443,8 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(GC1);
+	stopSet.push_back(FI);
+	stopSet.push_back(OD);
 	
 	guardedCommand(stopSet + stops);
 	//lookAheadToken();
@@ -436,6 +453,8 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 		match(GC1, ff.firstOfGCList() + stops);
 		guardedCommandList(stops);
 	}
+	else
+		syntaxCheck(stops - ID);
 	
 }
 
@@ -446,9 +465,12 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(GC2);	
-	
+	stopSet.push_back(RIGHTBRACKET);
+	stopSet.push_back(RIGHTP);
+	//agc = true;
 	expression(stopSet + ff.firstOfStatement() + stops);
 	match(GC2, ff.firstOfStatement() + stops);
+	//agc = false;
 	//lookAheadToken();
 	statementPart(stops);
 }
@@ -458,7 +480,7 @@ void Parser::expression(vector<Symbol> stops)
 {
 	outFile<<"expression()"<<endl;	
 	
-	primaryExpression(ff.firstOfExpList() + ff.firstOfPrimOp() + stops);
+	primaryExpression(ff.firstOfPrimOp() + stops);
 	
 	//lookAheadToken();
 	if(in(ff.firstOfPrimOp()))
@@ -466,6 +488,17 @@ void Parser::expression(vector<Symbol> stops)
 		primaryOperator(ff.firstOfExpList() + stops);
 		expression(stops);
 	}
+	else
+		syntaxCheck(stops - ID);
+	/*else if(in(ff.firstOfExpList()))
+	{
+		vector<Symbol>().swap(stopSet);
+		stopSet.push_back(GC2);	
+		stopSet.push_back(RIGHTBRACKET);
+		stopSet.push_back(RIGHTP);	
+		syntaxCheck(ff.firstOfPrimOp()+stopSet);
+	}*/
+	//syntaxCheck(stops);
 }
 
 // primaryOperator = '&' | '|'
@@ -496,6 +529,17 @@ void Parser::primaryExpression(vector<Symbol> stops)
 		relationalOperator(stops);
 		simpleExpression(stops);
 	}
+	else
+		syntaxCheck(stops);
+	/*else if (in(ff.firstOfExpList()))
+	{
+		vector<Symbol>().swap(stopSet);
+		stopSet.push_back(GC2);	
+		stopSet.push_back(RIGHTBRACKET);
+		stopSet.push_back(RIGHTP);	
+		syntaxCheck(ff.firstOfPrimOp()+stopSet);		
+	}
+	*/
 }	
 
 // relationalOperator = '<' | '=' | '>'	
@@ -541,6 +585,8 @@ void Parser::simpleExpression(vector<Symbol> stops)
 	{
 		addopTerm(stops);
 	}
+	else
+		syntaxCheck(stops - ID);
 	
 }
 
@@ -584,6 +630,8 @@ void Parser::term(vector<Symbol> stops)
 		multiplyingOperator(stops);
 		term(stops);
 	}
+	else
+		syntaxCheck(stops - ID);
 }
 
 // multiplyingOperator = '*' | '/' | '\'
@@ -668,6 +716,8 @@ void Parser::variableAccess(vector<Symbol> stops)
 		expression(stopSet + stops);	
 		match(RIGHTBRACKET,stops);
 	}
+	else
+		syntaxCheck(stops - ID);
 }
 
 // constanr = numeral | booleanSymbol | constantName
@@ -727,7 +777,7 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 			}
 			else if(lookAheadTok.getSymbol() != NONAME)
 			{
-				//outFile<<"Stopped At" << lookAheadTok.getSymbol()<<" Lexeme "<<lookAheadTok.getLexeme()<<endl;			
+				//cerr<<"Stopped At" << lookAheadTok.getSymbol()<<" Lexeme "<<lookAheadTok.getLexeme()<<endl;			
 				break;
 			}	
 			
@@ -736,9 +786,11 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	}
 	else
 	{
-		cerr<<"Didn't match "<<lookAheadTok.getSymbol()<<" Line No:"<<lineNo<<endl;
+		cerr<<"Didn't match "<<sym<<" Line No:"<<lineNo<<endl;
 		syntaxError(stops);
 	}
+
+	syntaxCheck(stops);
 	
 }
 
@@ -758,7 +810,6 @@ void Parser::lookAheadToken()
 		}
 		else if(lookAheadTok.getSymbol() != NONAME)
 		{
-			outFile<<lookAheadTok.getSymbol()<<endl;
 			break;
 		}	
 	}
@@ -792,6 +843,42 @@ void Parser::syntaxError(vector<Symbol> stops)
 			NewLine();
 		}
 	}
+}
+
+void Parser::syntaxCheck(vector<Symbol> stops)
+{
+	//admin.parseError()
+
+	while(1)
+	{	
+		
+		//newline detected
+		if(lookAheadTok.getSymbol() == NEWLINE)
+		{
+			NewLine();
+		}
+		else if(lookAheadTok.getSymbol() != NONAME)
+		{
+			break;
+		}	
+		lookAheadTok = scanner.nextToken();
+	}
+	if(!in(stops))
+	{
+		cerr<<"Problem paise: "<<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
+		/*if(agc)		
+		{
+			
+			vector<Symbol>().swap(stopSet);
+			stopSet.push_back(ID);			
+			syntaxError(stopSet + stops);
+		}*/
+		//else
+			syntaxError(stops);
+		
+	}
+	
+	
 }
 
 void Parser::ErrorCount()

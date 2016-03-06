@@ -39,6 +39,8 @@ class Parser
 	bool islookAheadTok;
 	//Stop symbols holder
 	vector<Symbol> stopSet;
+	//Assign and gc2 flag
+	bool agc;
 	public:
 	
 	//flag for printing symbol table
@@ -124,6 +126,7 @@ class Parser
 	
 	//syntax error recovery function
 	void syntaxError(vector<Symbol>);
+	void syntaxCheck(vector<Symbol>);
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
 	// error counter

@@ -250,6 +250,16 @@ vector<Symbol> Firstfollow::firstOfExpList()
 	return fOfExpList + fOfTerm; 
 }
 
+//First if guardedCommandList
+vector<Symbol> Firstfollow::firstOfGCList()
+{
+	vector<Symbol> fOfExpList;
+	fOfExpList.push_back(MINUS);
+	
+	vector<Symbol> fOfTerm = firstOfTerm();
+	
+	return fOfExpList + fOfTerm; 
+}
 
 //follow//functions for checking wheather the look ahead token is in follow of any non terminal 
 //follow of definitionPart
@@ -296,3 +306,15 @@ vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2)
 	return mergedSet;
 
 }
+
+//+ operator overloading for vector
+vector<Symbol> operator-(vector<Symbol> set, Symbol Sym)
+{
+	for(int i = 0; i < set.size(); i++)
+	{
+		if (sym == set.at(i))
+			set.at(i) = NONAME;
+	}
+	return set;
+
+}	

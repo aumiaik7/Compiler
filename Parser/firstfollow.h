@@ -89,4 +89,5 @@ class Firstfollow
 };
 
 vector<Symbol> operator+(vector<Symbol> , vector<Symbol> );
+vector<Symbol> operator-(vector<Symbol> , Symbol );	
 #endif

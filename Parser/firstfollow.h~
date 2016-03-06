@@ -71,6 +71,8 @@ class Firstfollow
 	vector<Symbol> firstOfDoSt();
 	//First if expressionList
 	vector<Symbol> firstOfExpList();
+	//First if guarderCommandList
+	vector<Symbol> firstOfGCList();
 
 
 
@@ -87,4 +89,5 @@ class Firstfollow
 };
 
 vector<Symbol> operator+(vector<Symbol> , vector<Symbol> );
+vector<Symbol> operator+(vector<Symbol> , Symbol );	
 #endif

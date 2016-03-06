@@ -8,7 +8,7 @@ begin
 	i,m:=1,n;
 	do i<m ->
 		if A[i] = x->m:=i;[]
-			~(A[i] = x) i:=i+1;
+			~(A[i] = x)->i:=i+1;
 		
 		fi;
 	od;
