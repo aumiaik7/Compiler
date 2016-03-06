@@ -250,16 +250,6 @@ vector<Symbol> Firstfollow::firstOfExpList()
 	return fOfExpList + fOfTerm; 
 }
 
-//First if guardedCommandList
-vector<Symbol> Firstfollow::firstOfGCList()
-{
-	vector<Symbol> fOfExpList;
-	fOfExpList.push_back(MINUS);
-	
-	vector<Symbol> fOfTerm = firstOfTerm();
-	
-	return fOfExpList + fOfTerm; 
-}
 
 //follow//functions for checking wheather the look ahead token is in follow of any non terminal 
 //follow of definitionPart

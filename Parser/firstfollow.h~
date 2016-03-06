@@ -71,8 +71,6 @@ class Firstfollow
 	vector<Symbol> firstOfDoSt();
 	//First if expressionList
 	vector<Symbol> firstOfExpList();
-	//First if guarderCommandList
-	vector<Symbol> firstOfGCList();
 
 
 

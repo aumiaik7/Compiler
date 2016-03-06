@@ -60,7 +60,7 @@ Token Scanner::nextToken()
 			{	
 				//check wheather its id/keyword from symbol table
 				int keyOrId = symTablePtr.insert(lex,idType);	
-				
+				cout<<"Lexeme: "<<lex<<" key: "<<keyOrId<<endl;	
 				//it's an ID	
 				if(keyOrId <= 3)
 				{

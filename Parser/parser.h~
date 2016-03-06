@@ -123,7 +123,7 @@ class Parser
 	//void error(string text);
 	
 	//syntax error recovery function
-	void syntaxError(vector<Symbol>);
+	void syntaxError(int);
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
 	// error counter

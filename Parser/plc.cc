@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 		srcFile.open(argv[1]);
 		outFile.open("ParserOutFile");
 		Parser parser(srcFile, outFile, scanner);
-		parser.program();	
+		parser.program(ENDOFFILE);	
 		
 	//}
 	//else
