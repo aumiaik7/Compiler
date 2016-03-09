@@ -1,15 +1,19 @@
 #include "administration.h"
 
+
+//const string Administration::terminals[TERMINALS] = { "id","num","bad num","bad name", "bad symbol", "badchar", "newline", "no name", "end of file", ".", ",", ";", "[", "]", "&", "|", "~", "<", "=", ">", "<=", ">=", "+", "-", "*", "/", "\\", ")", "(", ":=", "[]", "->", "begin", "end", "const", "array", "integer", "Boolean", "proc", "skip", "read", "write", "call", "if", "do", "fi", "od", "false", "true"};
 //constructor
-Administration::Administration(ifstream &in, ofstream &out, Scanner &sc)
+/*Administration::Administration(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),printSymbolTable(false)
 {
+}*/
+Administration::Administration()
+{
 }
-
 int Administration::scan()
 {
 		
-	//initializing line no and error count		
+	/*//initializing line no and error count		
 	lineNo = 1;
 	errorCount = 0;
 	//continues to scan until reaches max error or end of file
@@ -74,14 +78,14 @@ int Administration::scan()
 		scanner.printSymTable();
 	srcFile.close();
 	outFile.close();
-
+*/
 	return errorCount;
 }
 //new line counter
 void Administration::NewLine()
 {
 	lineNo++;
-	outFile<<"\n"<<"Line "<<lineNo<<":";	
+	//outFile<<"\n"<<"Line "<<lineNo<<":";	
 	
 }
 
@@ -94,8 +98,21 @@ bool Administration::validTok(Symbol sym)
 		return true;
 }	
 //write error messages to output file	
-void Administration::error(string text)
+void Administration::error(errorkind error,Symbol sym,int flag)
 {
-	
+	switch(error)
+	{
+		case ScanE:
+
+		break;
+		case ParseE:
+		if(flag == 1)
+		{
+			//cerr<<"Syntax Error: Missing "<<terminals[sym-256]<<" at line "<<lineNo<<endl;
+		}
+		break;
+		
+
+	}	
 }	
 

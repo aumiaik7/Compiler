@@ -293,6 +293,25 @@ vector<Symbol> Firstfollow::followOfGuardedCommand()
 	return folOfGc;
 }
 
+vector<Symbol> Firstfollow::followOfVaList()
+{
+	vector<Symbol> folOfVaList;
+	folOfVaList.push_back(ASSIGN);
+	
+	return folOfVaList;
+}
+
+vector<Symbol> Firstfollow::followOfExpression()
+{
+	vector<Symbol> folOfExpression;
+	folOfExpression.push_back(GC2);
+	folOfExpression.push_back(RIGHTP);
+	folOfExpression.push_back(RIGHTBRACKET);
+	
+	return folOfExpression;
+}
+
+
 
 //+ operator overloading for vector
 vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2)
@@ -306,6 +325,8 @@ vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2)
 	return mergedSet;
 
 }
+
+
 
 //+ operator overloading for vector
 vector<Symbol> operator-(vector<Symbol> set, Symbol sym)

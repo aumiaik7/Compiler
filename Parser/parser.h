@@ -9,6 +9,7 @@
 #include "token.h"
 #include "scanner.h"
 #include "firstfollow.h"
+#include "administration.h"	
 
 
 // This is the maximum number of errors before the compiler bails out.
@@ -41,6 +42,7 @@ class Parser
 	vector<Symbol> stopSet;
 	//Assign and gc2 flag
 	bool agc;
+	Administration admin;
 	public:
 	
 	//flag for printing symbol table

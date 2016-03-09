@@ -86,7 +86,7 @@ void Parser::definitionPart(vector<Symbol> stops)
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(SEMICOLON);	
-		definition(stopSet + stops);
+		definition(ff.firstOfDefinition() + stopSet + stops);
 		match(SEMICOLON , stops + ff.firstOfDefinition());
 		definitionPart(stops);
 	}
@@ -363,8 +363,14 @@ void Parser::variableAccessList(vector<Symbol> stops)
 		match(COMMA, ff.firstOfVAList() + stops);
 		variableList(stops);
 	}
+	else if(in(ff.followOfVaList()))
+	{
+		syntaxCheck(stops);		
+	}
 	else
-		syntaxCheck(stops - ID);		
+	{
+		syntaxCheck(stops - ID);
+	}			
 }
 
 // writeStatement = 'write' expressionList  
@@ -402,8 +408,9 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ASSIGN);
-	//agc = true;
+	
 	variableAccessList(stopSet + stops);
+	//agc = true;
 	match(ASSIGN, ff.firstOfExpList() + stops);
 	//agc = false;	
 	expressionList(stops);
@@ -453,8 +460,14 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 		match(GC1, ff.firstOfGCList() + stops);
 		guardedCommandList(stops);
 	}
+	else if(in(ff.firstOfStatement()))
+	{
+		syntaxCheck(stops);	
+	}
 	else
+	{
 		syntaxCheck(stops - ID);
+	}
 	
 }
 
@@ -467,10 +480,11 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	stopSet.push_back(GC2);	
 	stopSet.push_back(RIGHTBRACKET);
 	stopSet.push_back(RIGHTP);
-	//agc = true;
+	agc = true;
 	expression(stopSet + ff.firstOfStatement() + stops);
+	agc = false;
 	match(GC2, ff.firstOfStatement() + stops);
-	//agc = false;
+	
 	//lookAheadToken();
 	statementPart(stops);
 }
@@ -487,6 +501,10 @@ void Parser::expression(vector<Symbol> stops)
 	{
 		primaryOperator(ff.firstOfExpList() + stops);
 		expression(stops);
+	}
+	else if(agc)
+	{
+		syntaxCheck(stops);
 	}
 	else
 		syntaxCheck(stops - ID);
@@ -530,7 +548,7 @@ void Parser::primaryExpression(vector<Symbol> stops)
 		simpleExpression(stops);
 	}
 	else
-		syntaxCheck(stops);
+		syntaxCheck(stops - ID);
 	/*else if (in(ff.firstOfExpList()))
 	{
 		vector<Symbol>().swap(stopSet);
@@ -575,7 +593,7 @@ void Parser::simpleExpression(vector<Symbol> stops)
 {
 	outFile<<"simpleExpression()"<<endl;
 	//lookAheadToken();
-	if(!in(ff.firstOfTerm()))
+	if(lookAheadTok.getSymbol() == MINUS)
 	{
 		match(MINUS, ff.firstOfTerm() + stops);	
 	}
@@ -584,6 +602,10 @@ void Parser::simpleExpression(vector<Symbol> stops)
 	if(in(ff.firstOfAddOp()))
 	{
 		addopTerm(stops);
+	}
+	else if(agc)
+	{
+		syntaxCheck(stops);
 	}
 	else
 		syntaxCheck(stops - ID);
@@ -629,6 +651,14 @@ void Parser::term(vector<Symbol> stops)
 	{
 		multiplyingOperator(stops);
 		term(stops);
+	}	
+	else if(in(ff.followOfExpression()))
+	{
+		syntaxCheck(stops);
+	}
+	else if(agc)
+	{
+		syntaxCheck(stops);
 	}
 	else
 		syntaxCheck(stops - ID);
@@ -684,6 +714,11 @@ void Parser::factor(vector<Symbol> stops)
 		match(NOT, ff.firstOfFactor() + stops);
 		factor(stops);	
 	}
+	else if(in(ff.followOfExpression()))
+	{
+		//error message for empty expr		
+		//cout<<"ekhane kenu "<<lineNo<<endl;
+	}
 	
 		
 }
@@ -698,6 +733,8 @@ void Parser::variableAccess(vector<Symbol> stops)
 	{
 		match(ID, ff.firstOfIndexSel() + stops);	
 	}	
+	
+	
 	else
 	{
 		match(ID, ff.firstOfIndexSel() + stops);
@@ -715,6 +752,10 @@ void Parser::variableAccess(vector<Symbol> stops)
 				
 		expression(stopSet + stops);	
 		match(RIGHTBRACKET,stops);
+	}
+	else if(agc)
+	{
+		syntaxCheck(stops);
 	}
 	else
 		syntaxCheck(stops - ID);
@@ -786,6 +827,7 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	}
 	else
 	{
+		//admin.error(ParseE,lookAheadTok.getSymbol(),1);
 		cerr<<"Didn't match "<<sym<<" Line No:"<<lineNo<<endl;
 		syntaxError(stops);
 	}
@@ -813,7 +855,7 @@ void Parser::lookAheadToken()
 			break;
 		}	
 	}
-		
+	cout<<"Stopped at<<"<<lookAheadTok.getSymbol()<<endl;	
 	
 	
 }
@@ -843,12 +885,14 @@ void Parser::syntaxError(vector<Symbol> stops)
 			NewLine();
 		}
 	}
+	//cout<<"Matched :"<<lookAheadTok.getSymbol()<<endl;
 }
 
 void Parser::syntaxCheck(vector<Symbol> stops)
 {
 	//admin.parseError()
 
+	
 	while(1)
 	{	
 		
@@ -865,16 +909,10 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 	}
 	if(!in(stops))
 	{
-		cerr<<"Problem paise: "<<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
-		/*if(agc)		
-		{
-			
-			vector<Symbol>().swap(stopSet);
-			stopSet.push_back(ID);			
-			syntaxError(stopSet + stops);
-		}*/
+		cerr<<"Problem paise: "<<lookAheadTok.getLexeme()<<" " <<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
+		
 		//else
-			syntaxError(stops);
+		syntaxError(stops);
 		
 	}
 	

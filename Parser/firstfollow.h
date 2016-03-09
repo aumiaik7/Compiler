@@ -83,6 +83,10 @@ class Firstfollow
 	vector<Symbol> followOfStatePart();
 	//follow of guardedCommand
 	vector<Symbol> followOfGuardedCommand();
+	//follow of variableAccessList
+	vector<Symbol> followOfVaList();	
+	//follow of variableAccessList
+	vector<Symbol> followOfExpression();
 		
 		
 		
