@@ -52,9 +52,6 @@ class Administration
 	//either valid or invalid token 
 	bool validTok(Symbol sym);
 	static const string terminals[TERMINALS];
-	//parsing done
-	void done();
-
 		
 };
 

@@ -133,7 +133,9 @@ class Parser
 	void lookAheadToken();
 	// error counter
 	void ErrorCount();
-	
+	//parsing done
+	void done();
+
 	
 		
 };

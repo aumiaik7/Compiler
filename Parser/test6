@@ -4,7 +4,7 @@ begin
 	integer x,i; Boolean found;
 
 	proc Search
-	begin integer m
+	begin integer m;
 	i,m :=1,n;
 	do i<m ->
 		if A[i] = x-> m:=i;[]
@@ -12,7 +12,7 @@ begin
 		
 		fi;
 	od;
-	found := A[i] = x;
+	found := A[i] = x
 end;	
 
 $Input Table:
@@ -28,4 +28,3 @@ $Input Table:
 		read x;
 	od;
 end.
-

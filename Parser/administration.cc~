@@ -111,7 +111,7 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 		{
 			string before = "at";
 			if (sym == SEMICOLON)
-				before = "before";	
+				before = "before/";	
 			cerr<<"Syntax Error: Missing '"<<terminals[sym-256]<<"' "<<before<< " line "<<lineNo<<endl;
 		}
 		break;

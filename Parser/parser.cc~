@@ -5,6 +5,7 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),islookAheadTok(false)
 {
 	agc = false;
+	errorCount = 0;
 	lookAheadToken();
 }
 
@@ -19,8 +20,8 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 void Parser::program(Symbol sym)
 {
 	
-	lineNo = 1;	
-	errorCount = 0;
+		
+	
 	
 	stopSet.push_back(sym);
 	stopSet.push_back(DOT);
@@ -37,7 +38,7 @@ void Parser::program(Symbol sym)
 
 	
 	//parsing done
-	done();
+	admin.done();
 		
 }
 
@@ -814,7 +815,7 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 			//newline detected			
 			if(lookAheadTok.getSymbol() == NEWLINE)
 			{
-				NewLine();
+				admin.NewLine();
 			}
 			else if(lookAheadTok.getSymbol() != NONAME)
 			{
@@ -827,7 +828,7 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	}
 	else
 	{
-		//admin.error(ParseE,lookAheadTok.getSymbol(),1);
+		admin.error(ParseE,sym,1);
 		//cerr<<"Didn't match "<<sym<<" Line No:"<<lineNo<<endl;
 		syntaxError(stops);
 	}
@@ -848,24 +849,18 @@ void Parser::lookAheadToken()
 		//newline detected
 		if(lookAheadTok.getSymbol() == NEWLINE)
 		{
-			NewLine();
+			admin.NewLine();
 		}
 		else if(lookAheadTok.getSymbol() != NONAME)
 		{
 			break;
 		}	
 	}
-	cout<<"Stopped at<<"<<lookAheadTok.getSymbol()<<endl;	
+	
 	
 	
 }
 
-//new line counter
-void Parser::NewLine()
-{
-	lineNo++;
-	//outFile<<"Line No: "<<lineNo<<endl;
-}
 
 //Syntex Error recovery
 // when any error occured corresponding error msg is displayed and 
@@ -882,7 +877,7 @@ void Parser::syntaxError(vector<Symbol> stops)
 		lookAheadTok = scanner.nextToken();	
 		if(lookAheadTok.getSymbol() == NEWLINE)
 		{
-			NewLine();
+			admin.NewLine();
 		}
 	}
 	//cout<<"Matched :"<<lookAheadTok.getSymbol()<<endl;
@@ -899,7 +894,7 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 		//newline detected
 		if(lookAheadTok.getSymbol() == NEWLINE)
 		{
-			NewLine();
+			admin.NewLine();
 		}
 		else if(lookAheadTok.getSymbol() != NONAME)
 		{
@@ -909,8 +904,8 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 	}
 	if(!in(stops))
 	{
-		cerr<<"Problem paise: "<<lookAheadTok.getLexeme()<<" " <<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
-		
+		//cerr<<"Problem paise: "<<lookAheadTok.getLexeme()<<" " <<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
+		admin.error(ParseE,sym,2);	
 		//else
 		syntaxError(stops);
 		
@@ -932,14 +927,7 @@ void Parser::ErrorCount()
 	}
 	
 }	
-void Parser::done()
-{
-	cout<<endl<<"<<<Parsing Done>>>"<<endl;
-	cout<<"The methods called for nonterminals are showed in ParseOutFile "<<endl;
-	outFile<<"Total no of lines: "<<lineNo<<endl;
-	srcFile.close();
-	outFile.close();
-}
+
 
 bool Parser::in(vector<Symbol> set)
 {
