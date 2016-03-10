@@ -94,9 +94,14 @@ Token Scanner::nextToken()
 			{
 				Token tk(BADNAME,-1,"");
 				// as error detected scanner continues to read chars untill it reaches end of line
-				while(srcFile.peek() != '\n')
-				{
-					srcFile.get();				
+				//while(srcFile.peek() != '\n')
+				while(1)
+				{	
+					char inCh = srcFile.peek();
+					if(isWhitespace(inCh) || isSpecial(inCh) || inCh == EOF)
+						break;
+					else
+						srcFile.get();				
 				}
 				
 				return tk;
@@ -148,9 +153,14 @@ Token Scanner::nextToken()
 			{
 				//Bad numeral detected
 				Token tk(BADNUMERAL,-1,"");
-				while(srcFile.peek() != '\n')
+				
+				while(1)
 				{
-					srcFile.get();				
+					char inCh = srcFile.peek();
+					if(isWhitespace(inCh) || isNumEnd(inCh) || inCh == EOF)
+						break;		
+					else
+						srcFile.get();
 				}
 				return tk;
 			}
@@ -339,9 +349,14 @@ Token Scanner::nextToken()
 	else
 	{
 		Token tk(BADSYMBOL,-1,"");
-		while(srcFile.peek() != '\n')
-		{
-			srcFile.get();				
+		while(1)
+		{	
+			char inCh = srcFile.peek();
+			if(isWhitespace(inCh) || isSpecial(inCh) || inCh == EOF)
+				break;
+			else
+				srcFile.get();
+							
 		}
 		return tk;
 	}

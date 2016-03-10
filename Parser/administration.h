@@ -47,12 +47,16 @@ class Administration
 	int lineNo;
 	// Error function for the phases
 	void error(errorkind , Symbol, int);
+	//function for error count
+	void ErrorCount();	
 	// call scanner from here
 	int scan();
 	//either valid or invalid token 
 	bool validTok(Symbol sym);
+	//string of array that contains name of all terminal symbols
+	//helps to show meaningful lexical and syntactical error messages
 	static const string terminals[TERMINALS];
-	//parsing done
+	//parsing done message
 	void done();
 
 		

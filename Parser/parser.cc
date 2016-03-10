@@ -5,37 +5,34 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
 :srcFile(in),outFile(out),scanner(sc),islookAheadTok(false)
 {
 	agc = false;
-	errorCount = 0;
+	//First look ahead token	
 	lookAheadToken();
 }
 
 /*
   Imoplementation of the CFG is self explanatory
   for non terminal ther are corresponding methods
-  and terminal symbols are matched using match(Symbol)
+  and terminal symbols are matched using match(Symbol,vector<Symbol>)
   method				
 */
 
 // program = block '.'
 void Parser::program(Symbol sym)
 {
-	
-		
-	
-	
+	//Building stop set using vector		
 	stopSet.push_back(sym);
 	stopSet.push_back(DOT);
 	
-	outFile<<"program()"<<endl;	
+	outFile<<"program()"<<endl;
+	//non terminal bloc	
 	block(stopSet);	
 	
+	//Building stop set using vector that may appear after dot symbol
 	vector<Symbol>().swap(stopSet);
+	stopSet.push_back(sym); //adding symbols in stop set
 	
-
-	stopSet.push_back(sym);
-	
-	match(DOT,stopSet);//, stopSet);
-
+	//this portion matches dot and if not matched the shows corresponding error message and finds the next stop symbol
+	match(DOT,stopSet);
 	
 	//parsing done
 	admin.done();
@@ -46,9 +43,11 @@ void Parser::program(Symbol sym)
 void Parser::block(vector<Symbol> stops)
 {
 	outFile<<"block()"<<endl;
-	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);// , ff.firstOfDefinition() + ff.firstOfStatement() + stops);
 	
-	//lookAheadToken();
+	//this portion matches begin and if not matched the shows corresponding error message and finds the next stop symbol
+	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);
+	
+	//look ahead token is first of definition
 	if(in(ff.firstOfDefinition()))
 	{	
 		vector<Symbol>().swap(stopSet);
@@ -58,20 +57,15 @@ void Parser::block(vector<Symbol> stops)
 		statementPart(stops + stopSet);
 		
 	}
+	//look ahead token is follow of definition
 	else if(in(ff.followOfDefPart()))
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(END);
 		statementPart(stops + stopSet);
 	}
-	else
-	{
-		//error message
-		cerr<<"Syntax Error: "<<"Illegal start of definition/statement at line "<< lineNo <<endl;
-		ErrorCount();
-	}
-
-	//this portion matches end and if not matched the shows corresponding error message
+	
+	//this portion matches end and if not matched the shows corresponding error message and finds the next stop symbol
 	match(END,stops);
 }
 
@@ -80,8 +74,6 @@ void Parser::definitionPart(vector<Symbol> stops)
 {
 	
 	outFile<<"definitionPart()"<<endl;
-	
-	//lookAheadToken();
 	
 	if(in(ff.firstOfDefinition()))
 	{
@@ -102,7 +94,6 @@ void Parser::definition(vector<Symbol> stops)
 {
 	outFile<<"definition()"<<endl;
 	
-	//lookAheadToken();
 	if(in(ff.firstOfConstDef()))
 	{
 		constantDefinition(stops);
@@ -121,24 +112,13 @@ void Parser::definition(vector<Symbol> stops)
 void Parser::constantDefinition(vector<Symbol> stops)
 {
 	outFile<<"constantDefinition()"<<endl;
+	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(EQUAL);
-	//stopSet.push_back(ff.firstOfConstant());
+	
 	match(CONST , ff.firstOfConstant() + stopSet + stops);
 	
-	if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 2)	
-	{
-		match(ID, stopSet + stops);	
-	}
-	else
-	{
-		match(ID, stopSet + stops);
-		//cerr<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-		cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
-	}		
-		
-	//vector<Symbol>().swap(stopSet);
-	//stopSet.push_back(ff.firstOfConstant());
+	match(ID, stopSet + stops);	
 	
 	match(EQUAL , ff.firstOfConstant() + stops);
 	
@@ -150,12 +130,12 @@ void Parser::constantDefinition(vector<Symbol> stops)
 void Parser::variableDefinition(vector<Symbol> stops)
 {
 	outFile<<"variableDefinition()"<<endl;	
-
 	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ARRAY);
+	
 	typeSymbol(stopSet + ff.firstOfVariList() + stops);
-	//lookAheadToken();
+	
 	if(in(ff.firstOfVariList()))
 	{
 		variableList(stops);
@@ -179,7 +159,6 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		match(RIGHTBRACKET , stops);
 	}
 	
-	
 }
 
 // procedureDefinition = 'proc' procedureName block
@@ -193,18 +172,9 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 	
 	match(PROC, stopSet + stops);
 
-	if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 3)	
-	{
-		stopSet.pop_back();
-		match(ID, stopSet + stops);	
-	}
-	else
-	{
-		match(ID, stopSet + stops);
-		//outFile<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-		cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
-	}
+	stopSet.pop_back();//pop back ID from stop set that may appear ID
 	
+	match(ID, stopSet + stops);	
 	
 	block(stops);
 }
@@ -229,23 +199,16 @@ void Parser::typeSymbol(vector<Symbol> stops)
 void Parser::variableList(vector<Symbol> stops)
 {
 	outFile<<"variableList()"<<endl;
-	//outFile<<"Matched" << lookAheadTok.getSymbol()<<" Lexeme "<<lookAheadTok.getLexeme()<<endl;
 	
-	if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 1)	
+	if(lookAheadTok.getSymbol() == ID )	
 	{
+		if(lookAheadTok.getIDtype() != 1)
+			admin.error(ParseE,lookAheadTok.getSymbol(),1);
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(COMMA);
 		match(ID, stopSet + stops);	
 	}	
-	else
-	{
-		vector<Symbol>().swap(stopSet);
-		stopSet.push_back(COMMA);
-		match(ID, stopSet + stops);
-		//outFile<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-		cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
-	}
-	////lookAheadToken();
+	
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
@@ -256,14 +219,13 @@ void Parser::variableList(vector<Symbol> stops)
 		syntaxCheck(stops - ID);
 	}
 	
-	
 }
 
 // statementPart = {statement';'}
 void Parser::statementPart(vector<Symbol> stops)
 {
 	outFile<<"statementPart()"<<endl;
-	//lookAheadToken();
+	
 	if(in(ff.firstOfStatement()))
 	{	
 		vector<Symbol>().swap(stopSet);	
@@ -286,7 +248,7 @@ void Parser::statementPart(vector<Symbol> stops)
 void Parser::statement(vector<Symbol> stops)
 {
 	outFile<<"statement()"<<endl;
-	//lookAheadToken();	
+		
 	if(in(ff.firstOfEmptySt()))
 	{
 		match(SKIP,stops);
@@ -310,18 +272,14 @@ void Parser::statement(vector<Symbol> stops)
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(ID);
-		match(CALL, stopSet + stops);
 		
+		match(CALL, stopSet + stops);
 
-		if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 3)	
+		if(lookAheadTok.getSymbol() == ID )	
 		{
+			if(lookAheadTok.getIDtype() != 3)
+				admin.error(ParseE,lookAheadTok.getSymbol(),3);	
 			match(ID, stops);	
-		}
-		else
-		{
-			match(ID, stops);
-			//outFile<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-			cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
 		}
 				
 	}
@@ -344,9 +302,9 @@ void Parser::statement(vector<Symbol> stops)
 void Parser::readStatement(vector<Symbol> stops)
 {
 	outFile<<"readStatement()"<<endl;
+	
 	match(READ, ff.firstOfVAList() + stops);
 	variableAccessList(stops);
-			
 }
 
 // variableAccessList = variableAccess{','variableAccess}
@@ -357,6 +315,7 @@ void Parser::variableAccessList(vector<Symbol> stops)
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(COMMA);
 	stopSet.push_back(ID);
+	
 	variableAccess(stopSet + stops);
 
 	if(lookAheadTok.getSymbol() == COMMA)
@@ -378,6 +337,7 @@ void Parser::variableAccessList(vector<Symbol> stops)
 void Parser::writeStatement(vector<Symbol> stops)
 {
 	outFile<<"writeStatement()"<<endl;
+	
 	match(WRITE, ff.firstOfExpList() + stops);
 	expressionList(stops);
 }
@@ -411,9 +371,7 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 	stopSet.push_back(ASSIGN);
 	
 	variableAccessList(stopSet + stops);
-	//agc = true;
 	match(ASSIGN, ff.firstOfExpList() + stops);
-	//agc = false;	
 	expressionList(stops);
 }
 
@@ -426,7 +384,6 @@ void Parser::ifStatement(vector<Symbol> stops)
 	stopSet.push_back(FI);
 	
 	match(IF, ff.firstOfGCList() + stops);
-		
 	guardedCommandList(stopSet + stops);
 	match(FI,stops);	
 }
@@ -435,6 +392,7 @@ void Parser::ifStatement(vector<Symbol> stops)
 void Parser::doStatement(vector<Symbol> stops)
 {
 	outFile<<"doStatement()"<<endl;
+
 	match(DO, ff.firstOfGCList() + stops);
 
 	vector<Symbol>().swap(stopSet);
@@ -455,7 +413,7 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 	stopSet.push_back(OD);
 	
 	guardedCommand(stopSet + stops);
-	//lookAheadToken();
+	
 	if(lookAheadTok.getSymbol() == GC1)
 	{
 		match(GC1, ff.firstOfGCList() + stops);
@@ -481,12 +439,12 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	stopSet.push_back(GC2);	
 	stopSet.push_back(RIGHTBRACKET);
 	stopSet.push_back(RIGHTP);
+	//This flag is used to resolve some issues that arises conflicts between stop sets 
 	agc = true;
 	expression(stopSet + ff.firstOfStatement() + stops);
 	agc = false;
-	match(GC2, ff.firstOfStatement() + stops);
 	
-	//lookAheadToken();
+	match(GC2, ff.firstOfStatement() + stops);
 	statementPart(stops);
 }
 
@@ -497,7 +455,6 @@ void Parser::expression(vector<Symbol> stops)
 	
 	primaryExpression(ff.firstOfPrimOp() + stops);
 	
-	//lookAheadToken();
 	if(in(ff.firstOfPrimOp()))
 	{
 		primaryOperator(ff.firstOfExpList() + stops);
@@ -509,15 +466,6 @@ void Parser::expression(vector<Symbol> stops)
 	}
 	else
 		syntaxCheck(stops - ID);
-	/*else if(in(ff.firstOfExpList()))
-	{
-		vector<Symbol>().swap(stopSet);
-		stopSet.push_back(GC2);	
-		stopSet.push_back(RIGHTBRACKET);
-		stopSet.push_back(RIGHTP);	
-		syntaxCheck(ff.firstOfPrimOp()+stopSet);
-	}*/
-	//syntaxCheck(stops);
 }
 
 // primaryOperator = '&' | '|'
@@ -542,7 +490,7 @@ void Parser::primaryExpression(vector<Symbol> stops)
 	outFile<<"primaryExpression()"<<endl;	
 	simpleExpression(ff.firstOfRelOp() + stops);
 	
-	//lookAheadToken();
+	
 	if(in(ff.firstOfRelOp()))
 	{
 		relationalOperator(stops);
@@ -550,15 +498,6 @@ void Parser::primaryExpression(vector<Symbol> stops)
 	}
 	else
 		syntaxCheck(stops - ID);
-	/*else if (in(ff.firstOfExpList()))
-	{
-		vector<Symbol>().swap(stopSet);
-		stopSet.push_back(GC2);	
-		stopSet.push_back(RIGHTBRACKET);
-		stopSet.push_back(RIGHTP);	
-		syntaxCheck(ff.firstOfPrimOp()+stopSet);		
-	}
-	*/
 }	
 
 // relationalOperator = '<' | '=' | '>'	
@@ -593,13 +532,13 @@ void Parser::relationalOperator(vector<Symbol> stops)
 void Parser::simpleExpression(vector<Symbol> stops)
 {
 	outFile<<"simpleExpression()"<<endl;
-	//lookAheadToken();
+	
 	if(lookAheadTok.getSymbol() == MINUS)
 	{
 		match(MINUS, ff.firstOfTerm() + stops);	
 	}
 	term(ff.firstOfAddOp() + stops);
-	//lookAheadToken();	
+		
 	if(in(ff.firstOfAddOp()))
 	{
 		addopTerm(stops);
@@ -610,7 +549,6 @@ void Parser::simpleExpression(vector<Symbol> stops)
 	}
 	else
 		syntaxCheck(stops - ID);
-	
 }
 
 // addingOperator = '+' | '-'
@@ -626,28 +564,26 @@ void Parser::addingOperator(vector<Symbol> stops)
 	{
 		match(MINUS,stops);
 	}
-	
 }
 
 //helps to execute {addingOperator term}
 void Parser::addopTerm(vector<Symbol> stops)
 {
-	//lookAheadToken();
 	if(in(ff.firstOfAddOp()))
 	{
 		addingOperator(stops);
 		term(stops);
 		addopTerm(stops);
 	}
-	
 }
 
 // term = factor {multiplyingOperator factor}
 void Parser::term(vector<Symbol> stops)
 {
 	outFile<<"term()"<<endl;
+	
 	factor(ff.firstOfMultOp() + stops);
-	//lookAheadToken();
+	
 	if(in(ff.firstOfMultOp()))
 	{
 		multiplyingOperator(stops);
@@ -688,7 +624,7 @@ void Parser::multiplyingOperator(vector<Symbol> stops)
 void Parser::factor(vector<Symbol> stops)
 {
 	outFile<<"factor()"<<endl;
-	//lookAheadToken();
+	
 	if(lookAheadTok.getSymbol() == ID)
 	{
 		if(lookAheadTok.getIDtype() == 1)
@@ -706,7 +642,6 @@ void Parser::factor(vector<Symbol> stops)
 		stopSet.push_back(RIGHTP);
 	
 		match(LEFTP, ff.firstOfExpList() + stopSet + stops);
-
 		expression(stopSet + stops);	
 		match(RIGHTP,stops);
 	}
@@ -717,11 +652,9 @@ void Parser::factor(vector<Symbol> stops)
 	}
 	else if(in(ff.followOfExpression()))
 	{
-		//error message for empty expr		
-		//cout<<"ekhane kenu "<<lineNo<<endl;
+		admin.error(ParseE,lookAheadTok.getSymbol(),5);
 	}
 	
-		
 }
 
 //variableAccess = variableName [indexSelector]
@@ -730,27 +663,16 @@ void Parser::variableAccess(vector<Symbol> stops)
 	outFile<<"variableAccess()"<<endl;	
 	
 
-	if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 1)	
-	{
-		match(ID, ff.firstOfIndexSel() + stops);	
-	}	
-	
-	
-	else
-	{
+	if(lookAheadTok.getIDtype() != 1)
+			admin.error(ParseE,lookAheadTok.getSymbol(),1);
 		match(ID, ff.firstOfIndexSel() + stops);
-		//outFile<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-		cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
-	}
-		
-	//lookAheadToken();
+	
 	if(in(ff.firstOfIndexSel()))
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(RIGHTBRACKET);
 	
 		match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
-				
 		expression(stopSet + stops);	
 		match(RIGHTBRACKET,stops);
 	}
@@ -781,21 +703,17 @@ void Parser::constant(vector<Symbol> stops)
 	}
 	else if(lookAheadTok.getSymbol() == ID)
 	{
-		if(lookAheadTok.getSymbol() == ID && lookAheadTok.getIDtype() == 2)	
+		if(lookAheadTok.getSymbol() == ID )	
 		{
+			if(lookAheadTok.getIDtype() != 2)
+				admin.error(ParseE,lookAheadTok.getSymbol(),2);
 			match(ID, stops);	
 		}	
-		else
-		{
-			match(ID, stops);
-			//outFile<<"ID: "<<lookAheadTok.getLexeme()<< " Type" << lookAheadTok.getIDtype() <<endl;
-			cerr<<"Syntax Error: "<<"expecting name of constant type at line "<< lineNo <<endl;
-		}
-		
 	}
-	
-	
-	
+	else
+	{
+		admin.error(ParseE,lookAheadTok.getSymbol(),5);
+	}	
 }
 
 
@@ -806,8 +724,6 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	//it means the token is matched returns true
 	if(lookAheadTok.getSymbol() == sym)
 	{
-		//outFile<<"Matched "<<lookAheadTok.getSymbol()<<" Lexeme:"<<lookAheadTok.getLexeme()<<" Line No:"<<lineNo<<endl;
-
 		while(1)
 		{
 			lookAheadTok = scanner.nextToken();	
@@ -817,22 +733,27 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 			{
 				admin.NewLine();
 			}
+			//lexical errors
+			else if(lookAheadTok.getSymbol() == BADNAME || lookAheadTok.getSymbol() == BADNUMERAL 
+				|| lookAheadTok.getSymbol() == BADSYMBOL)
+			{
+				admin.error(ScanE,lookAheadTok.getSymbol(),0);
+			}
 			else if(lookAheadTok.getSymbol() != NONAME)
 			{
-				//cerr<<"Stopped At" << lookAheadTok.getSymbol()<<" Lexeme "<<lookAheadTok.getLexeme()<<endl;			
 				break;
 			}	
-			
 		}	
 		return true;
 	}
 	else
 	{
-		admin.error(ParseE,sym,1);
-		//cerr<<"Didn't match "<<sym<<" Line No:"<<lineNo<<endl;
+		//report syntax error 
+		admin.error(ParseE,sym,4);
+		//recover from syntax error
 		syntaxError(stops);
 	}
-
+	//check whether the look ahead symbol is valid or not
 	syntaxCheck(stops);
 	
 }
@@ -841,7 +762,6 @@ void Parser::lookAheadToken()
 {
 	//This function grabs the first valid token.
 	//called from constructor 
-				
 	while(1)
 	{	
 		lookAheadTok = scanner.nextToken();
@@ -851,43 +771,48 @@ void Parser::lookAheadToken()
 		{
 			admin.NewLine();
 		}
+		//lexical errors
+		else if(lookAheadTok.getSymbol() == BADNAME || lookAheadTok.getSymbol() == BADNUMERAL 
+				|| lookAheadTok.getSymbol() == BADSYMBOL)
+		{
+			admin.error(ScanE,lookAheadTok.getSymbol(),0);
+		}	
 		else if(lookAheadTok.getSymbol() != NONAME)
 		{
 			break;
 		}	
 	}
-	
-	
-	
 }
 
 
 //Syntex Error recovery
-// when any error occured corresponding error msg is displayed and 
-// we try find the next possible symbol (stop symbol) that can occur
-// after the error. For different kinds of terminal symbol stop 
-// symbols are different. The different sets of stop symbols finding
-
+// when any error occured we try find the next possible valid
+// symbol (stop symbol) that can occur after the error. 
 
 void Parser::syntaxError(vector<Symbol> stops)
 {
-	//admin.parseError()
+	//continue to grab token until any stop symbol is found
 	while(!in(stops))
 	{
 		lookAheadTok = scanner.nextToken();	
+		//newline detected
 		if(lookAheadTok.getSymbol() == NEWLINE)
 		{
 			admin.NewLine();
 		}
+		//lexical errors
+		else if(lookAheadTok.getSymbol() == BADNAME || lookAheadTok.getSymbol() == BADNUMERAL 
+				|| lookAheadTok.getSymbol() == BADSYMBOL)
+		{
+			admin.error(ScanE,lookAheadTok.getSymbol(),0);
+		}
 	}
-	//cout<<"Matched :"<<lookAheadTok.getSymbol()<<endl;
 }
 
+//after matching any terminal symbol we check whether our look ahead token is valid or not
 void Parser::syntaxCheck(vector<Symbol> stops)
 {
-	//admin.parseError()
-
-	
+	//grab a look ahead token
 	while(1)
 	{	
 		
@@ -896,44 +821,34 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 		{
 			admin.NewLine();
 		}
+		//lexical errors
+		else if(lookAheadTok.getSymbol() == BADNAME || lookAheadTok.getSymbol() == BADNUMERAL 
+				|| lookAheadTok.getSymbol() == BADSYMBOL)
+		{
+			admin.error(ScanE,lookAheadTok.getSymbol(),0);
+		}
 		else if(lookAheadTok.getSymbol() != NONAME)
 		{
 			break;
 		}	
 		lookAheadTok = scanner.nextToken();
 	}
+	//look ahead symbol is not in stop set so sytax error occuered
 	if(!in(stops))
 	{
-		//cerr<<"Problem paise: "<<lookAheadTok.getLexeme()<<" " <<lookAheadTok.getSymbol()<<" At :"<<lineNo<<endl;
-		admin.error(ParseE,lookAheadTok.getSymbol(),2);	
-		//else
+		//report syntax error
+		admin.error(ParseE,lookAheadTok.getSymbol(),5);	
+		//recover from syntax error
 		syntaxError(stops);
-		
 	}
-	
-	
 }
 
-void Parser::ErrorCount()
-{	
-	errorCount++;
-	if(errorCount >= MAXERRORS)
-	{
-		cerr<<"Too many errors. Bailing out!!\n";
-		outFile<<"Too many errors. Bailed out!!";
-		srcFile.close();
-		outFile.close();
-		exit(0);
-	}
-	
-}	
 
-
+//check whether the look ahead symbol is in the 'set' of symbola
 bool Parser::in(vector<Symbol> set)
 {
 	for(int i = 0; i < set.size(); i++)
 	{
-		
 		if(lookAheadTok.getSymbol() == set.at(i))
 		{
 			return true;

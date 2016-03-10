@@ -42,11 +42,10 @@ class Parser
 	vector<Symbol> stopSet;
 	//Assign and gc2 flag
 	bool agc;
+	//Administration class object for line count and error display	
 	Administration admin;
-	public:
 	
-	//flag for printing symbol table
-	bool printSymbolTable;
+	public:
 	// Set up input and output files for scanning
 	Parser(ifstream &in, ofstream &out, Scanner &sc);
 	~Parser() {}
@@ -123,16 +122,12 @@ class Parser
 	bool in(vector<Symbol> );
 	// Begin a new line of input
 	void NewLine();
-	// Error function for the phases
-	//void error(string text);
 	
 	//syntax error recovery function
 	void syntaxError(vector<Symbol>);
 	void syntaxCheck(vector<Symbol>);
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
-	// error counter
-	void ErrorCount();
 	
 	
 		

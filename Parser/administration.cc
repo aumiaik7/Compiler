@@ -13,7 +13,10 @@ Administration::Administration()
 }
 int Administration::scan()
 {
-		
+	//this method was used in previous phase to grab token in loop
+	//but now parser grabs token from scanner so it is commented out
+
+	
 	/*//initializing line no and error count		
 	lineNo = 1;
 	errorCount = 0;
@@ -82,11 +85,24 @@ int Administration::scan()
 */
 	return errorCount;
 }
+
+
+
 //new line counter
 void Administration::NewLine()
 {
 	lineNo++;
-	//outFile<<"\n"<<"Line "<<lineNo<<":";	
+}
+
+//error counter
+void Administration::ErrorCount()
+{	
+	errorCount++;
+	if(errorCount >= MAXERRORS)
+	{
+		cerr<<"Too many errors. Bailing out!!\n";
+		exit(0);
+	}
 	
 }
 
@@ -98,32 +114,52 @@ bool Administration::validTok(Symbol sym)
 	else 
 		return true;
 }	
-//write error messages to output file	
+
+//Lexical and syntactical error reporting	
 void Administration::error(errorkind error,Symbol sym,int flag)
 {
+	ErrorCount();	
 	switch(error)
 	{
+		//lexical error
 		case ScanE:
-
+			cerr<<"Lexical Error: '"<<terminals[sym-256]<<"' occured at line "<<lineNo<<endl;	
 		break;
-		case ParseE:
-		if(flag == 1)
+		//parsing error
+		case ParseE:	
+		//this portions handles error in variableName, constantName and procedureName 
+		if(flag < 4)
+		{		
+			string type[3] = {"variable", "constant", "procedure"};
+			cerr<<"Syntax Error: Expecting name of type '"<<type[flag - 1]<<"' at line "<<lineNo<<endl;
+		}
+		//matching error
+		else if(flag == 4)
 		{
 			string before = "at";
 			if (sym == SEMICOLON)
-				before = "before";	
+				before = "on/before";	
 			cerr<<"Syntax Error: Missing '"<<terminals[sym-256]<<"' "<<before<< " line "<<lineNo<<endl;
 		}
-		break;
+		//found token that was not supposed to be there 
+		else if(flag == 5)
+		{
+			string before = "at";
+			if (sym == SEMICOLON)
+				before = "on/before";	
+			cerr<<"Syntax Error: Illegal token '"<<terminals[sym-256]<<"' at line "<<lineNo<<endl;
+		}
 		
-
+		break;
 	}	
 }	
 
+
+//Completion message
 void Administration::done()
 {
 	cout<<endl<<"<<<Parsing Done>>>"<<endl;
 	cout<<"The methods called for nonterminals are showed in ParseOutFile "<<endl;
-	cout<<"Total no of lines: "<<lineNo<<endl;
+	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
 }
 

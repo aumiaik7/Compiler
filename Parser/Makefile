@@ -29,7 +29,7 @@ token.o: token.cc
 	$(CC) $(CFLAGS) token.cc -g
 
 clean:
-	rm -rf *.o *~ scanner
+	rm -rf *.o *~ parser
 	 
 
 

@@ -28,4 +28,3 @@ $Input Table:
 		read x;
 	od;
 end.
-
