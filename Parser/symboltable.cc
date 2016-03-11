@@ -8,6 +8,7 @@ Symboltable::Symboltable()
 	//Symbol for begin is 288
 	int sym = 288; 
 	
+	vector<Token>().swap(htable);
 	//initiazlizinf hash table
 	htable.reserve(SYMTABLESIZE);
 	for( int i = 0; i < SYMTABLESIZE; ++i )

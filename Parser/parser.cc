@@ -712,7 +712,7 @@ void Parser::constant(vector<Symbol> stops)
 	}
 	else
 	{
-		admin.error(ParseE,lookAheadTok.getSymbol(),5);
+		admin.error(ParseE,lookAheadTok.getSymbol(),6);
 	}	
 }
 
@@ -844,7 +844,7 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 }
 
 
-//check whether the look ahead symbol is in the 'set' of symbola
+//check whether the look ahead symbol is in the 'set' of symbol
 bool Parser::in(vector<Symbol> set)
 {
 	for(int i = 0; i < set.size(); i++)

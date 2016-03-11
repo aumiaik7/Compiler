@@ -141,10 +141,13 @@ Token Scanner::nextToken()
 				else
 				{
 					Token tk(BADNUMERAL,-1,"");
-					// as error detected scanner continues to read chars untill it reaches end of line
-					while(srcFile.peek() != '\n')
+					while(1)
 					{
-						srcFile.get();				
+						char inCh = srcFile.peek();
+						if(isWhitespace(inCh) || isNumEnd(inCh) || inCh == EOF)
+							break;		
+						else
+							srcFile.get();
 					}
 					return tk;		
 				}

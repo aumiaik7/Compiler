@@ -1,6 +1,6 @@
 $PL Program: sample
 begin
-	const z = 3147483647;integer array A[z];
+	const z = 3147483647 ;integer array A[z];
 	integer z,j,J; Boolean found;
 
 proc Search
@@ -19,4 +19,5 @@ i,m:=1,n;
 
 
 	found := A[i] = x;
+	end
 end.

@@ -144,10 +144,12 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 		//found token that was not supposed to be there 
 		else if(flag == 5)
 		{
-			string before = "at";
-			if (sym == SEMICOLON)
-				before = "on/before";	
 			cerr<<"Syntax Error: Illegal token '"<<terminals[sym-256]<<"' at line "<<lineNo<<endl;
+		}
+		else if(flag == 6)
+		{
+			
+			cerr<<"Syntax Error: Constant expected at line "<<lineNo<<endl;
 		}
 		
 		break;
@@ -159,7 +161,7 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 void Administration::done()
 {
 	cout<<endl<<"<<<Parsing Done>>>"<<endl;
-	cout<<"The methods called for nonterminals are showed in ParseOutFile "<<endl;
+	cout<<"The methods called for nonterminals are showed in ParserOutFile "<<endl;
 	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
 }
 
