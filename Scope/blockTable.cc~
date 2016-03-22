@@ -1,0 +1,8 @@
+#include "blockTable.h"
+
+BlockTable::BlockTable()
+{
+	
+	myBlock.reserve(10,table(20));
+}
+

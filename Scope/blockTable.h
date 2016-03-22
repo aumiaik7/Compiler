@@ -6,6 +6,7 @@
 #include <string>
 #include "type.h"
 #define MAXBLOCKS 10
+#define MAXDEFINITIONS 20
 
 using namespace std;
 
@@ -25,7 +26,11 @@ class BlockTable
 	//keeps track of the current block
 	int blockLevel;
 	//vector of block table	
-	vector<TableEntry> table;
+	typedef vector<TableEntry> table;
+	typedef vector<table> block;
+	block myBlock;
+	//typedef vector< vector<TableEntry> > blockTable(MAXBLOCKS,vector<TableEntry>(MAXDEFINITIONS));
+	
 
 	public:
 	//default constructor
@@ -38,7 +43,7 @@ class BlockTable
 	//an object with our current id. Otherwise it returns
 	//false indicating ambiguous name i.e there are more 
 	//than one definition for the specific id 
-	bool define(int, PL_Kind, PL_Type, int, int)
+	bool define(int, PL_Kind, PL_Type, int, int);
 
 		
 };
