@@ -1,13 +1,11 @@
-#include "blockTable.h"
+#include "blocktable.h"
 
 BlockTable::BlockTable()
 :myBlock(MAXBLOCKS,table(MAXDEFINITIONS))
 {
 	
-	TableEntry entry;
-	entry.id = 1;
-	entry.type = INTEGRAL;
-
-	myBlock[0].push_back(entry);
+	myBlock[0][0].id = 1;
+	myBlock[0][0].type = INTEGRAL;
+	cout<<myBlock[0][0].id<<endl;
 }
 
