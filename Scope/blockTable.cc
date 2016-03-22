@@ -1,9 +1,11 @@
 #include "blockTable.h"
 
 BlockTable::BlockTable()
-:myBlock(10,table(20))
+:myBlock(MAXBLOCKS,table(MAXDEFINITIONS))
 {
 	
-	
+	TableEntry entry;
+	entry.id = 1;
+	entry.type = INTEGRAL;
 }
 
