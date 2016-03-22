@@ -7,6 +7,7 @@
 #include "administration.h"
 #include "parser.h"
 #include "symboltable.h"
+#include "blocktable.h"
 
 int main(int argc, char *argv[]) {
     
@@ -31,6 +32,7 @@ int main(int argc, char *argv[]) {
 	
 	srcFile.open(argv[1]);
 	outFile.open("ParserOutFile");
+	BlockTable bTable;
 	//Parser calss object	
 	Parser parser(srcFile, outFile, scanner);
 	//Strat Parsing  

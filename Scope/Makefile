@@ -4,8 +4,8 @@ CFLAGS=-c
 
 all: scanner
 
-scanner: plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blockTable.o
-	$(CC) plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blockTable.o -o parser
+scanner: plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o
+	$(CC) plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o -o typenscope
 
 plc.o: plc.cc
 	$(CC) $(CFLAGS) plc.cc -g
@@ -28,11 +28,11 @@ symboltable.o: symboltable.cc
 token.o: token.cc
 	$(CC) $(CFLAGS) token.cc -g
 
-blockTable.o: blockTable.cc
-	$(CC) $(CFLAGS) blockTable.cc -g
+blockTable.o: blocktable.cc
+	$(CC) $(CFLAGS) blocktable.cc -g
 
 clean:
-	rm -rf *.o *~ parser
+	rm -rf *.o *~ typenscope
 	 
 
 
