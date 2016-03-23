@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	outFile.open("ParserOutFile");
 	BlockTable bTable;
 	//Parser calss object	
-	Parser parser(srcFile, outFile, scanner);
+	Parser parser(srcFile, outFile, scanner, bTable);
 	//Strat Parsing  
 	parser.program(ENDOFFILE);	
 	

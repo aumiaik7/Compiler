@@ -1,7 +1,7 @@
 #include "scanner.h"
 
 //constructor
-Scanner::Scanner(ifstream &in, Symboltable st)
+Scanner::Scanner(ifstream &in, Symboltable &st)
 :srcFile(in), symTablePtr(st),idType(1)
 {
 	

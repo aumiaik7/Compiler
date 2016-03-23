@@ -24,7 +24,7 @@ class Scanner
 	bool isNumEnd(char lach);//helps to detect end of numerals
 	int isValidNum(string s);//helps to detect wheather the numeral is good or bad	
 	public:
-	Scanner(ifstream &in,Symboltable st);//constructor
+	Scanner(ifstream &in,Symboltable &st);//constructor
 	Token nextToken();//token generator
 	void printSymTable();//print symbol table on terminal
 	

@@ -8,6 +8,8 @@
 #include <vector>
 #include "token.h"
 #include "scanner.h"
+#include "blocktable.h"
+#include "type.h"
 #include "firstfollow.h"
 #include "administration.h"	
 
@@ -27,6 +29,8 @@ class Parser
 	ofstream &outFile;
 	//Scanner object reference
 	Scanner &scanner;
+	//BlockTable object reference
+	BlockTable &bTable;
 	// object to call method of first and follow of the non terminals of CFG of PL
 	Firstfollow ff;
 	int lineNo;
@@ -36,6 +40,12 @@ class Parser
 	int errorCount;
 	//get token from scan() function	
 	Token lookAheadTok;
+	//temporary Name token
+	Token nameTok;
+	//temporary name value
+	int nameValue;
+	//temporary name Type
+	PL_Type nameType;
 	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
 	//Stop symbols holder
@@ -47,7 +57,7 @@ class Parser
 	
 	public:
 	// Set up input and output files for scanning
-	Parser(ifstream &in, ofstream &out, Scanner &sc);
+	Parser(ifstream &in, ofstream &out, Scanner &sc, BlockTable &bt);
 	~Parser() {}
 	//functions for implementing CFG
 	// program = block '.'
@@ -117,6 +127,8 @@ class Parser
 	
 	//this function is used to match terminal symbols of CFG
 	bool match(Symbol,vector<Symbol>);
+	//this function is used to match name symbols of CFG
+	int matchName(Symbol,vector<Symbol>);
 
 	//any symbol is in a set of symbol
 	bool in(vector<Symbol> );

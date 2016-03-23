@@ -25,9 +25,11 @@ class BlockTable
 	private:
 	//keeps track of the current block
 	int blockLevel;
+	int def;
 	//vector of block table	
 	typedef vector<TableEntry> table;
 	typedef vector<table> block;
+	bool error;
 	block myBlock;
 	//typedef vector< vector<TableEntry> > blockTable(MAXBLOCKS,vector<TableEntry>(MAXDEFINITIONS));
 	
@@ -44,6 +46,10 @@ class BlockTable
 	//false indicating ambiguous name i.e there are more 
 	//than one definition for the specific id 
 	bool define(int, PL_Kind, PL_Type, int, int);
+	//error is false if the id we are looking for is in
+	//the block table. Search all blocks in the block table
+	//error is true if not found in the blocktable
+	TableEntry find(int, bool&);
 
 		
 };

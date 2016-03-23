@@ -45,12 +45,12 @@ int Symboltable::insert(string s,int type)
 		return 4;	
 	int isOccupied = search(s);
 		
-	if(s == keywords[1])
-		return 289;
+	//if(s == keywords[1])
+	//	return 289;
 	//position is empty keyword can be inserted 
 	if(isOccupied == -1)
 	{	
-		Token tk(ID,-1,s);
+		Token tk(ID,position,s);
 		tk.setIDtype(type);			
 		htable.at(position) = tk;
 		tk = htable.at(position);
@@ -71,7 +71,7 @@ int Symboltable::insert(string s,int type)
 			if(tempTk.getSymbol() == 263)
 			{	
 				
-				Token tk(ID,-1,s);
+				Token tk(ID,position,s);
 				tk.setIDtype(type);
 				htable.at(position) = tk;
 				tk = htable.at(position);

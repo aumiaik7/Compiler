@@ -1,8 +1,8 @@
 #include "parser.h"
 
 //constructor
-Parser::Parser(ifstream &in, ofstream &out, Scanner &sc)
-:srcFile(in),outFile(out),scanner(sc),islookAheadTok(false)
+Parser::Parser(ifstream &in, ofstream &out, Scanner &sc, BlockTable &bt)
+:srcFile(in),outFile(out),scanner(sc),bTable(bt), islookAheadTok(false)
 {
 	agc = false;
 	//First look ahead token	
@@ -118,12 +118,17 @@ void Parser::constantDefinition(vector<Symbol> stops)
 	
 	match(CONST , ff.firstOfConstant() + stopSet + stops);
 	
-	match(ID, stopSet + stops);	
+	int id = matchName(ID, stopSet + stops);
 	
 	match(EQUAL , ff.firstOfConstant() + stops);
 	
 	constant(stops);
 	
+	if(id != -1)
+	{
+			bool isDefined = bTable.define(id,CONSTANT,nameType,1,nameValue);
+	}
+
 }
 
 // variableDefinition = typeSymbol variableList | typeSymbol 'array' variableList'['constant']'
@@ -691,18 +696,27 @@ void Parser::constant(vector<Symbol> stops)
 
 	if(lookAheadTok.getSymbol() == NUMERAL)
 	{
-		match(NUMERAL,stops);		
+		nameValue = lookAheadTok.getValue();
+		nameType = INTEGRAL;
+		match(NUMERAL,stops);
+
 	}	
 	else if(lookAheadTok.getSymbol() == TRUE)
 	{
+		nameValue = 1;
+		nameType = BOOLEAN;
 		match(TRUE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == FALSE)
 	{
+		nameValue = 0;
+		nameType = BOOLEAN;
 		match(FALSE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == ID)
 	{
+		//find value from block table
+		//later
 		if(lookAheadTok.getSymbol() == ID )	
 		{
 			if(lookAheadTok.getIDtype() != 2)
@@ -712,6 +726,8 @@ void Parser::constant(vector<Symbol> stops)
 	}
 	else
 	{
+		nameValue = -1;
+		nameType = UNIVERSAL;
 		admin.error(ParseE,lookAheadTok.getSymbol(),6);
 	}	
 }
@@ -756,6 +772,51 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	//check whether the look ahead symbol is valid or not
 	syntaxCheck(stops);
 	
+}
+
+//this function is used to match name symbols of CFG
+int Parser::matchName(Symbol sym , vector<Symbol> stops)
+{
+	int temp = -1;
+	nameTok = lookAheadTok;
+	//it means the token is matched returns true
+	if(lookAheadTok.getSymbol() == sym)
+	{
+		//index position of name symbol in symbol table
+		temp = lookAheadTok.getValue();
+		while(1)
+		{
+			lookAheadTok = scanner.nextToken();
+
+			//newline detected
+			if(lookAheadTok.getSymbol() == NEWLINE)
+			{
+				admin.NewLine();
+			}
+			//lexical errors
+			else if(lookAheadTok.getSymbol() == BADNAME || lookAheadTok.getSymbol() == BADNUMERAL
+				|| lookAheadTok.getSymbol() == BADSYMBOL)
+			{
+				admin.error(ScanE,lookAheadTok.getSymbol(),0);
+			}
+			else if(lookAheadTok.getSymbol() != NONAME)
+			{
+				break;
+			}
+		}
+		return temp;
+	}
+	else
+	{
+		//report syntax error
+		admin.error(ParseE,sym,4);
+		//recover from syntax error
+		syntaxError(stops);
+	}
+	//check whether the look ahead symbol is valid or not
+	syntaxCheck(stops);
+	return temp;
+
 }
 
 void Parser::lookAheadToken()
