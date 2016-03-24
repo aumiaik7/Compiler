@@ -2,7 +2,7 @@
 
 //constructor
 Parser::Parser(ifstream &in, ofstream &out, Scanner &sc, BlockTable &bt)
-:srcFile(in),outFile(out),scanner(sc),bTable(bt), islookAheadTok(false)
+:srcFile(in),outFile(out),scanner(sc),bTable(bt),islookAheadTok(false)
 {
 	agc = false;
 	//First look ahead token	
@@ -44,6 +44,8 @@ void Parser::block(vector<Symbol> stops)
 {
 	outFile<<"block()"<<endl;
 	
+	//new block in block table
+	bTable.newBlock();
 	//this portion matches begin and if not matched the shows corresponding error message and finds the next stop symbol
 	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);
 	
@@ -126,7 +128,17 @@ void Parser::constantDefinition(vector<Symbol> stops)
 	
 	if(id != -1)
 	{
-			bool isDefined = bTable.define(id,CONSTANT,nameType,1,nameValue);
+		bool isDefined = bTable.define(id,CONSTANT,nameType,1,nameValue);
+		if(!isDefined)
+		{
+		/*
+		 *
+		 *
+		 *
+		 *
+		 */
+			//ambiguous name error
+		}
 	}
 
 }
@@ -147,6 +159,7 @@ void Parser::variableDefinition(vector<Symbol> stops)
 	}
 	else if(lookAheadTok.getSymbol() == ARRAY)
 	{
+		int defPosition = bTable.def;
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(LEFTBRACKET);
 		stopSet.push_back(RIGHTBRACKET);
@@ -162,6 +175,20 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		
 		constant(stopSet + stops);
 		match(RIGHTBRACKET , stops);
+
+		if(nameType == INTEGRAL)
+		{
+			bTable.setArraySize(defPosition,nameValue);
+		}
+		else
+		{
+			/*
+			 *
+			 *
+			 *
+			 */
+			//error
+		}
 	}
 	
 }
@@ -191,10 +218,12 @@ void Parser::typeSymbol(vector<Symbol> stops)
 
 	if(lookAheadTok.getSymbol() == INT)
 	{
+		nameType = INTEGRAL;
 		match(INT,stops);		
 	}	
 	else if(lookAheadTok.getSymbol() == BOOL)
 	{
+		nameType = BOOLEAN;
 		match(BOOL,stops);
 	}
 		
@@ -207,11 +236,21 @@ void Parser::variableList(vector<Symbol> stops)
 	
 	if(lookAheadTok.getSymbol() == ID )	
 	{
-		if(lookAheadTok.getIDtype() != 1)
-			admin.error(ParseE,lookAheadTok.getSymbol(),1);
+		//if(lookAheadTok.getIDtype() != 1)
+		//	admin.error(ParseE,lookAheadTok.getSymbol(),1);
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(COMMA);
-		match(ID, stopSet + stops);	
+
+		int id = matchName(ID, stopSet + stops);
+
+		if(id != -1)
+		{
+				bool isDefined = bTable.define(id,VAR,nameType,1,-1);
+				if(!isDefined)
+				{
+					//ambiguous name error
+				}
+		}
 	}	
 	
 	if(lookAheadTok.getSymbol() == COMMA)
@@ -326,7 +365,7 @@ void Parser::variableAccessList(vector<Symbol> stops)
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
-		variableList(stops);
+		variableAccessList(stops);
 	}
 	else if(in(ff.followOfVaList()))
 	{
@@ -703,13 +742,13 @@ void Parser::constant(vector<Symbol> stops)
 	}	
 	else if(lookAheadTok.getSymbol() == TRUE)
 	{
-		nameValue = 1;
+		nameValue = 0;
 		nameType = BOOLEAN;
 		match(TRUE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == FALSE)
 	{
-		nameValue = 0;
+		nameValue = 1;
 		nameType = BOOLEAN;
 		match(FALSE,stops);
 	}
@@ -719,14 +758,26 @@ void Parser::constant(vector<Symbol> stops)
 		//later
 		if(lookAheadTok.getSymbol() == ID )	
 		{
-			if(lookAheadTok.getIDtype() != 2)
+			//if(lookAheadTok.getIDtype() != 2)
+			//look for the constantName in block table
+			TableEntry entry =  bTable.find(lookAheadTok.getValue(),bTable.error);
+			//not found
+			if(bTable.error)
+			{
 				admin.error(ParseE,lookAheadTok.getSymbol(),2);
+			}
+			//found
+			else
+			{
+				nameValue = entry.value;
+				nameType = INTEGRAL;
+			}
 			match(ID, stops);	
 		}	
 	}
 	else
 	{
-		nameValue = -1;
+		nameValue = -3;
 		nameType = UNIVERSAL;
 		admin.error(ParseE,lookAheadTok.getSymbol(),6);
 	}	

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include "type.h"
 #define MAXBLOCKS 10
 #define MAXDEFINITIONS 20
@@ -25,11 +26,9 @@ class BlockTable
 	private:
 	//keeps track of the current block
 	int blockLevel;
-	int def;
 	//vector of block table	
 	typedef vector<TableEntry> table;
 	typedef vector<table> block;
-	bool error;
 	block myBlock;
 	//typedef vector< vector<TableEntry> > blockTable(MAXBLOCKS,vector<TableEntry>(MAXDEFINITIONS));
 	
@@ -38,6 +37,7 @@ class BlockTable
 	//default constructor
 	BlockTable();
 	~BlockTable(){};
+	bool error;
 	//return true if the id we are looking for is found
 	//in the current block. false otherwise
 	bool search(int);
@@ -49,8 +49,12 @@ class BlockTable
 	//error is false if the id we are looking for is in
 	//the block table. Search all blocks in the block table
 	//error is true if not found in the blocktable
-	TableEntry find(int, bool&);
-
+	TableEntry find(int, bool &);
+	//new block
+	void newBlock();
+	//setSize for Arrays
+	void setArraySize(int,int);
+	int def;
 		
 };
 

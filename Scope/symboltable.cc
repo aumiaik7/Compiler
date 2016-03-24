@@ -37,12 +37,15 @@ int Symboltable::getOC()
 }
 
 //insert keyword/id in symbol table
-int Symboltable::insert(string s,int type)
+Token Symboltable::insert(string s,int type)
 {
 		
 	//symbol table is full 
 	if(full())
-		return 4;	
+	{
+		cerr<<"Symbol table is full. Program exits"<<endl;
+		exit(0);
+	}
 	int isOccupied = search(s);
 		
 	//if(s == keywords[1])
@@ -53,9 +56,9 @@ int Symboltable::insert(string s,int type)
 		Token tk(ID,position,s);
 		tk.setIDtype(type);			
 		htable.at(position) = tk;
-		tk = htable.at(position);
+		//tk = htable.at(position);
 		occupied++;
-		return type;			
+		return tk;
 	}
 
 	//position is occupied finds the next empty position and insert
@@ -74,9 +77,9 @@ int Symboltable::insert(string s,int type)
 				Token tk(ID,position,s);
 				tk.setIDtype(type);
 				htable.at(position) = tk;
-				tk = htable.at(position);
+				//tk = htable.at(position);
 				occupied++;
-				return type;	
+				return tk;
 				
 			}
 			//go to the next position			
@@ -86,11 +89,11 @@ int Symboltable::insert(string s,int type)
 				int sym = tempTk.getSymbol();
 				
 				if(sym >= 288  && s == keywords[sym - 288] ) //encoding scheme for matching lexeme with keyword
-				{					
-					return sym; // for keyword
+				{
+					return tempTk; // for keyword
 				}				
 				else if( s == tempTk.getLexeme())
-					return tempTk.getIDtype(); // same identifier already stored				
+					return tempTk; // same identifier already stored
 				
 				//last position so reset
 				else

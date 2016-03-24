@@ -59,18 +59,18 @@ Token Scanner::nextToken()
 			else if(isWhitespace(laCh) || isSpecial(laCh) || ch == EOF)
 			{	
 				//check wheather its id/keyword from symbol table
-				int keyOrId = symTablePtr.insert(lex,idType);	
+				Token keyOrId = symTablePtr.insert(lex,idType);
 				
 				//it's an ID	
-				if(keyOrId <= 3)
+				if(keyOrId.getIDtype() <= 3)
 				{
-					Token tk(ID,-1,lex);
-					tk.setIDtype(keyOrId);
+					//Token tk(ID,-1,lex);
+					//tk.setIDtype(keyOrId);
 					idType = 1;	
-					return tk;
+					return keyOrId;
 				}
 				//symbol table full program exits
-				else if (keyOrId == 4)
+				else if (keyOrId.getIDtype() == 4)
 				{
 					cout<<"Symbol table is full. Program exits"<<endl;
 					exit(0);				
@@ -79,14 +79,14 @@ Token Scanner::nextToken()
 				else
 				{
 					//next identifier is of type constant
-					if(keyOrId == 290)
+					if(keyOrId.getSymbol() == CONST)
 						idType = 2; 
-					else if(keyOrId == 294)
+					else if(keyOrId.getSymbol() == PROC)
 						idType = 3;
 					else
 						idType = 1;
-					Token tk((Symbol)keyOrId,-1,"");
-					return tk;
+					//Token tk((Symbol)keyOrId,-1,"");
+					return keyOrId;
 				}	
 			}
 			//invalid identifier 

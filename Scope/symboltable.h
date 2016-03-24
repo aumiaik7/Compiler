@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include "token.h"
 #include "symbol.h"
 #define KEYWORDS 17
@@ -31,7 +32,7 @@ class Symboltable
 	// Insert a token with lexeme s in the symbol table; if already in the table return its
 	// location (index); otherwise create a token of appropriate type; insert the token and
 	// return its location; modified in the later phases
-	int insert(string s,int type);
+	Token insert(string s,int type);
 	void insert(Token tok);//this insert is used for pre loading symbol table with keywords
 	// Return true if the table is full; false otherwise
 	bool full();
