@@ -1,7 +1,7 @@
 $PL Program: Linear Search
 begin
-	const n = 10;integer array A,B,C[n];
-	integer x,i; Boolean found;
+	const n = 10;integer array A[n];
+	integer x,n; Boolean found;
 
 	proc Search
 	begin integer m;

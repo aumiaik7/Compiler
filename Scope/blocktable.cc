@@ -42,7 +42,7 @@ bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nV
 
 TableEntry BlockTable::find(int idToLook, bool &err)
 {
-	for(int i = 0; i <= blockLevel; i++)
+	for(int i = blockLevel; i >= 0; i--)
 		for(int j = 0; j < MAXDEFINITIONS; j++)
 		{
 			if(myBlock[i][j].id == -1)

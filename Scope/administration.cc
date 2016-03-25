@@ -153,6 +153,23 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 		}
 		
 		break;
+
+		//Scope and type error
+		case ScopeE:
+		if(flag < 4)
+		{
+			string type[3] = {"variable", "constant", "procedure"};
+			cerr<<"Scope Error: Expecting name of type '"<<type[flag - 1]<<"' at line "<<lineNo<<endl;
+		}
+		else if(flag == 4)
+		{
+			cerr<<"Scope Error: Undefined name at line "<<lineNo<<endl;
+		}
+		else if(flag == 5)
+		{
+			cerr<<"Scope Error: Ambiguous name at line "<<lineNo<<endl;
+		}
+		break;
 	}	
 }	
 

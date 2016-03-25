@@ -131,13 +131,9 @@ void Parser::constantDefinition(vector<Symbol> stops)
 		bool isDefined = bTable.define(id,CONSTANT,nameType,1,nameValue);
 		if(!isDefined)
 		{
-		/*
-		 *
-		 *
-		 *
-		 *
-		 */
 			//ambiguous name error
+			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
+
 		}
 	}
 
@@ -182,12 +178,8 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		}
 		else
 		{
-			/*
-			 *
-			 *
-			 *
-			 */
-			//error
+			//
+			admin.error(ScopeE,lookAheadTok.getSymbol(),2);
 		}
 	}
 	
@@ -206,9 +198,19 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 
 	stopSet.pop_back();//pop back ID from stop set that may appear ID
 	
-	match(ID, stopSet + stops);	
+	int id = matchName(ID, stopSet + stops);
 	
 	block(stops);
+
+	if(id != -1)
+	{
+		bool isDefined = bTable.define(id,PROCEDURE,INTEGRAL,1,1);
+		if(!isDefined)
+		{
+			//ambiguous name error
+			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
+		}
+	}
 }
 
 // typeSymbol = 'integer' | 'Boolean'
@@ -249,6 +251,7 @@ void Parser::variableList(vector<Symbol> stops)
 				if(!isDefined)
 				{
 					//ambiguous name error
+					admin.error(ScopeE,lookAheadTok.getSymbol(),5);
 				}
 		}
 	}	
@@ -321,9 +324,25 @@ void Parser::statement(vector<Symbol> stops)
 
 		if(lookAheadTok.getSymbol() == ID )	
 		{
-			if(lookAheadTok.getIDtype() != 3)
+			/*if(lookAheadTok.getIDtype() != 3)
 				admin.error(ParseE,lookAheadTok.getSymbol(),3);	
-			match(ID, stops);	
+			match(ID, stops);
+			*/
+			//look for the procedure name in block table
+			int id = matchName(ID, stops);
+			TableEntry entry =  bTable.find(id,bTable.error);
+			//not found
+			if(bTable.error)
+			{
+				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
+				/**
+				 *
+				 *
+				 *
+				 */
+			}
+			//found
+
 		}
 				
 	}
@@ -671,10 +690,21 @@ void Parser::factor(vector<Symbol> stops)
 	
 	if(lookAheadTok.getSymbol() == ID)
 	{
-		if(lookAheadTok.getIDtype() == 1)
+		/*if(lookAheadTok.getIDtype() == 1)
 			variableAccess(stops);
 		else if(lookAheadTok.getIDtype() == 2)
+			constant(stops);*/
+		TableEntry entry =  bTable.find(lookAheadTok.getValue(),bTable.error);
+		//not found
+		if(bTable.error)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+		}
+		else if(entry.kind == VAR)
+			variableAccess(stops);
+		else if (entry.kind == CONSTANT)
 			constant(stops);
+
 	}
 	else if(in(ff.firstOfConstant()))
 	{
@@ -707,9 +737,30 @@ void Parser::variableAccess(vector<Symbol> stops)
 	outFile<<"variableAccess()"<<endl;	
 	
 
-	if(lookAheadTok.getIDtype() != 1)
-			admin.error(ParseE,lookAheadTok.getSymbol(),1);
-		match(ID, ff.firstOfIndexSel() + stops);
+	//look for the variable Name in block table
+	int id = matchName(ID, stops);
+	if(id != -1)
+	{
+		TableEntry entry =  bTable.find(id,bTable.error);
+		//not found
+		if(bTable.error)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+		}
+		else if(entry.kind != VAR)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),1);
+		}
+		//found
+		else
+		{
+			nameValue = entry.value;
+			//nameType = INTEGRAL;
+		}
+	}
+	//if(lookAheadTok.getIDtype() != 1)
+	//		admin.error(ParseE,lookAheadTok.getSymbol(),1);
+	//	match(ID, ff.firstOfIndexSel() + stops);
 	
 	if(in(ff.firstOfIndexSel()))
 	{
@@ -756,24 +807,30 @@ void Parser::constant(vector<Symbol> stops)
 	{
 		//find value from block table
 		//later
-		if(lookAheadTok.getSymbol() == ID )	
-		{
+
 			//if(lookAheadTok.getIDtype() != 2)
 			//look for the constantName in block table
-			TableEntry entry =  bTable.find(lookAheadTok.getValue(),bTable.error);
-			//not found
-			if(bTable.error)
+			int id = matchName(ID, stops);
+			if(id != -1)
 			{
-				admin.error(ParseE,lookAheadTok.getSymbol(),2);
+				TableEntry entry =  bTable.find(id,bTable.error);
+				//not found
+				if(bTable.error)
+				{
+					admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+				}
+				else if(entry.kind != CONSTANT)
+				{
+					admin.error(ScopeE,lookAheadTok.getSymbol(),2);
+				}
+				//found
+				else
+				{
+					nameValue = entry.value;
+					nameType = INTEGRAL;
+				}
 			}
-			//found
-			else
-			{
-				nameValue = entry.value;
-				nameType = INTEGRAL;
-			}
-			match(ID, stops);	
-		}	
+
 	}
 	else
 	{
