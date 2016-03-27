@@ -41,11 +41,11 @@ class Parser
 	//get token from scan() function	
 	Token lookAheadTok;
 	//temporary Name token
-	Token nameTok;
+	//Token nameTok;
 	//temporary name value
-	int nameValue;
+	//int nameValue;
 	//temporary name Type
-	PL_Type nameType;
+	//PL_Type nameType;
 	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
 	//Stop symbols holder
@@ -75,9 +75,9 @@ class Parser
 	// procedureDefinition = 'proc' procedureName block
 	void procedureDefinition(vector<Symbol>);
 	// typeSymbol = 'integer' | 'Boolean'
-	void typeSymbol(vector<Symbol>);
+	PL_Type typeSymbol(vector<Symbol>);
 	// variableList = variableName {',' variableName}
-	void variableList(vector<Symbol>);
+	void variableList(PL_Type,vector<Symbol>);
 	// statementPart = {statement';'}
 	void statementPart(vector<Symbol>);
 	// statement = emptyStatement | readStatement | writeStatement |  assignmentStatement | ifStatement | doStatement 
@@ -105,25 +105,25 @@ class Parser
 	// primaryOperator = '&' | '|'
 	void primaryOperator(vector<Symbol>);	
 	// primaryExpression = simpleExpression [relationalOperator simpleExpression]
-	void primaryExpression(vector<Symbol>);
+	PL_Type primaryExpression(vector<Symbol>);
 	// relationalOperator = '<' | '=' | '>'	
 	void relationalOperator(vector<Symbol>);
 	// simpleExpression = ['-'] term {addingOperator term}
-	void simpleExpression(vector<Symbol>);
+	PL_type simpleExpression(vector<Symbol>);
 	// addingOperator = '+' | '-'
 	void addingOperator(vector<Symbol>);
 	//helps to execute {addingOperator term}
 	void addopTerm(vector<Symbol>);
 	// term = factor {multiplyingOperator factor}
-	void term(vector<Symbol>);
+	PL_Type term(vector<Symbol>);
 	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator(vector<Symbol>);
 	// factor = constant | variableAccess | '('expression')' | '~' factor	
-	void factor(vector<Symbol>);
+	PL_Type factor(vector<Symbol>);
 	// variableAccess = variableName [indexSelector]
-	void variableAccess(vector<Symbol>);
+	PL_Type variableAccess(vector<Symbol>);
 	// constanr = numeral | booleanSymbol | constantName
-	void constant(vector<Symbol>);
+	void constant(int&, PL_Type&, vector<Symbol>);
 	
 	//this function is used to match terminal symbols of CFG
 	bool match(Symbol,vector<Symbol>);

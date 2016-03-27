@@ -124,11 +124,13 @@ void Parser::constantDefinition(vector<Symbol> stops)
 	
 	match(EQUAL , ff.firstOfConstant() + stops);
 	
-	constant(stops);
+	int tempValue;//for constant value
+	PL_Type tempType;//for type of constant
+	constant(tempValue, tempType, stops);
 	
 	if(id != -1)
 	{
-		bool isDefined = bTable.define(id,CONSTANT,nameType,1,nameValue);
+		bool isDefined = bTable.define(id,CONSTANT,tempType,1,tempValue);
 		if(!isDefined)
 		{
 			//ambiguous name error
@@ -147,11 +149,11 @@ void Parser::variableDefinition(vector<Symbol> stops)
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ARRAY);
 	
-	typeSymbol(stopSet + ff.firstOfVariList() + stops);
+	PL_Type tempType = typeSymbol(stopSet + ff.firstOfVariList() + stops);
 	
 	if(in(ff.firstOfVariList()))
 	{
-		variableList(stops);
+		variableList(tempType, stops);
 	}
 	else if(lookAheadTok.getSymbol() == ARRAY)
 	{
@@ -163,18 +165,20 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		match(ARRAY, stopSet + ff.firstOfVariList() + stops);
 		
 		
-		variableList(stopSet + stops);
+		variableList(tempType, stopSet + stops);
 		
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(RIGHTBRACKET);
 		match(LEFTBRACKET , stopSet + ff.firstOfConstant() + stops);
 		
-		constant(stopSet + stops);
+		int tempValue;//for constant value
+		PL_Type tempType;//for type of constant
+		constant(tempValue, tempType, stopSet + stops);
 		match(RIGHTBRACKET , stops);
 
-		if(nameType == INTEGRAL)
+		if(tempType == INTEGRAL)
 		{
-			bTable.setArraySize(defPosition,nameValue);
+			bTable.setArraySize(defPosition,tempValue);
 		}
 		else
 		{
@@ -214,25 +218,27 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 }
 
 // typeSymbol = 'integer' | 'Boolean'
-void Parser::typeSymbol(vector<Symbol> stops)
+PL_Type Parser::typeSymbol(vector<Symbol> stops)
 {
 	outFile<<"typeSymbol()"<<endl;
 
 	if(lookAheadTok.getSymbol() == INT)
 	{
-		nameType = INTEGRAL;
-		match(INT,stops);		
+		//nameType = INTEGRAL;
+		match(INT,stops);
+		return INTEGRAL;
 	}	
 	else if(lookAheadTok.getSymbol() == BOOL)
 	{
-		nameType = BOOLEAN;
+		//nameType = BOOLEAN;
 		match(BOOL,stops);
+		return BOOLEAN;
 	}
 		
 }
 
 // variableList = variableName {','variableName}
-void Parser::variableList(vector<Symbol> stops)
+void Parser::variableList(PL_Type tempType,vector<Symbol> stops)
 {
 	outFile<<"variableList()"<<endl;
 	
@@ -247,7 +253,7 @@ void Parser::variableList(vector<Symbol> stops)
 
 		if(id != -1)
 		{
-				bool isDefined = bTable.define(id,VAR,nameType,1,-1);
+				bool isDefined = bTable.define(id, VAR, tempType, 1, -1);
 				if(!isDefined)
 				{
 					//ambiguous name error
@@ -259,7 +265,7 @@ void Parser::variableList(vector<Symbol> stops)
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
-		variableList(stops);
+		variableList(tempType, stops);
 	}
 	else
 	{
@@ -516,19 +522,28 @@ void Parser::expression(vector<Symbol> stops)
 {
 	outFile<<"expression()"<<endl;	
 	
-	primaryExpression(ff.firstOfPrimOp() + stops);
+	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
 	
 	if(in(ff.firstOfPrimOp()))
 	{
+		if(tempType != BOOLEAN)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),7);
+		}
 		primaryOperator(ff.firstOfExpList() + stops);
 		expression(stops);
+		return tempType;
 	}
 	else if(agc)
 	{
 		syntaxCheck(stops);
+		return tempType;
 	}
 	else
+	{
 		syntaxCheck(stops - ID);
+		return tempType;
+	}
 }
 
 // primaryOperator = '&' | '|'
@@ -548,19 +563,27 @@ void Parser::primaryOperator(vector<Symbol> stops)
 }
 
 // primaryExpression = simpleExpression [relationalOperator simpleExpression]
-void Parser::primaryExpression(vector<Symbol> stops)
+PL_Type Parser::primaryExpression(vector<Symbol> stops)
 {
 	outFile<<"primaryExpression()"<<endl;	
-	simpleExpression(ff.firstOfRelOp() + stops);
+	PL_Type tempType = simpleExpression(ff.firstOfRelOp() + stops);
 	
 	
 	if(in(ff.firstOfRelOp()))
 	{
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
 		relationalOperator(stops);
 		simpleExpression(stops);
+		return tempType;
 	}
 	else
+	{
 		syntaxCheck(stops - ID);
+		return tempType;
+	}
 }	
 
 // relationalOperator = '<' | '=' | '>'	
@@ -592,7 +615,7 @@ void Parser::relationalOperator(vector<Symbol> stops)
 }
 
 // simpleExpression = ['-'] term {addingOperator term}
-void Parser::simpleExpression(vector<Symbol> stops)
+PL_type Parser::simpleExpression(vector<Symbol> stops)
 {
 	outFile<<"simpleExpression()"<<endl;
 	
@@ -600,18 +623,28 @@ void Parser::simpleExpression(vector<Symbol> stops)
 	{
 		match(MINUS, ff.firstOfTerm() + stops);	
 	}
-	term(ff.firstOfAddOp() + stops);
+
+	PL_Type tempType = term(ff.firstOfAddOp() + stops);
 		
 	if(in(ff.firstOfAddOp()))
 	{
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
 		addopTerm(stops);
+		return tempType;
 	}
 	else if(agc)
 	{
 		syntaxCheck(stops);
+		return tempType;
 	}
 	else
+	{
 		syntaxCheck(stops - ID);
+		return tempType;
+	}
 }
 
 // addingOperator = '+' | '-'
@@ -641,27 +674,37 @@ void Parser::addopTerm(vector<Symbol> stops)
 }
 
 // term = factor {multiplyingOperator factor}
-void Parser::term(vector<Symbol> stops)
+PL_Type Parser::term(vector<Symbol> stops)
 {
 	outFile<<"term()"<<endl;
 	
-	factor(ff.firstOfMultOp() + stops);
+	PL_Type tempType = factor(ff.firstOfMultOp() + stops);
 	
 	if(in(ff.firstOfMultOp()))
 	{
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
 		multiplyingOperator(stops);
+
 		term(stops);
 	}	
 	else if(in(ff.followOfExpression()))
 	{
 		syntaxCheck(stops);
+		return tempType;
 	}
 	else if(agc)
 	{
 		syntaxCheck(stops);
+		return tempType;
 	}
 	else
+	{
 		syntaxCheck(stops - ID);
+		return tempType;
+	}
 }
 
 // multiplyingOperator = '*' | '/' | '\'
@@ -684,7 +727,7 @@ void Parser::multiplyingOperator(vector<Symbol> stops)
 }
 
 //factor = constant | variableAccess | '('expression')' | '~' factor	
-void Parser::factor(vector<Symbol> stops)
+PL_Type Parser::factor(vector<Symbol> stops)
 {
 	outFile<<"factor()"<<endl;
 	
@@ -699,16 +742,28 @@ void Parser::factor(vector<Symbol> stops)
 		if(bTable.error)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+			return UNIVERSAL;
 		}
 		else if(entry.kind == VAR)
-			variableAccess(stops);
+		{
+			PL_Type tempType = variableAccess(stops);
+			return tempType;
+		}
 		else if (entry.kind == CONSTANT)
-			constant(stops);
+		{
+			int tempValue;
+			PL_Type tempType;
+			constant(tempValue, tempType, stops);
+			return tempType;
+		}
 
 	}
 	else if(in(ff.firstOfConstant()))
 	{
-		constant(stops);	
+		int tempValue;
+		PL_Type tempType;
+		constant(tempValue, tempType, stops);
+		return tempType;
 	}
 	else if(lookAheadTok.getSymbol() == LEFTP)
 	{
@@ -718,6 +773,12 @@ void Parser::factor(vector<Symbol> stops)
 		match(LEFTP, ff.firstOfExpList() + stopSet + stops);
 		expression(stopSet + stops);	
 		match(RIGHTP,stops);
+		/*
+		 *
+		 *
+		 *
+		 *
+		 */
 	}
 	else if(lookAheadTok.getSymbol() == NOT)
 	{
@@ -727,12 +788,13 @@ void Parser::factor(vector<Symbol> stops)
 	else if(in(ff.followOfExpression()))
 	{
 		admin.error(ParseE,lookAheadTok.getSymbol(),5);
+		return UNIVERSAL;
 	}
 	
 }
 
 //variableAccess = variableName [indexSelector]
-void Parser::variableAccess(vector<Symbol> stops)
+PL_type Parser::variableAccess(vector<Symbol> stops)
 {
 	outFile<<"variableAccess()"<<endl;	
 	
@@ -754,53 +816,78 @@ void Parser::variableAccess(vector<Symbol> stops)
 		//found
 		else
 		{
-			nameValue = entry.value;
+			/*
+			 *
+			 *
+			 *
+			 *
+			 */
+			//nameValue = entry.value;
 			//nameType = INTEGRAL;
+			//return entry.type;
+		}
+
+		if(in(ff.firstOfIndexSel()))
+		{
+			if(entry.type != INTEGRAL)
+			{
+				admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+			}
+			vector<Symbol>().swap(stopSet);
+			stopSet.push_back(RIGHTBRACKET);
+
+			match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
+			expression(stopSet + stops);
+			/*
+			 *
+			 *
+			 *
+			 *
+			 *
+			 *
+			 */
+			match(RIGHTBRACKET,stops);
+		}
+		else if(agc)
+		{
+			syntaxCheck(stops);
+			return entry.type;
+		}
+		else
+		{
+			syntaxCheck(stops - ID);
+			return entry.type;
 		}
 	}
 	//if(lookAheadTok.getIDtype() != 1)
 	//		admin.error(ParseE,lookAheadTok.getSymbol(),1);
 	//	match(ID, ff.firstOfIndexSel() + stops);
 	
-	if(in(ff.firstOfIndexSel()))
-	{
-		vector<Symbol>().swap(stopSet);
-		stopSet.push_back(RIGHTBRACKET);
 	
-		match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
-		expression(stopSet + stops);	
-		match(RIGHTBRACKET,stops);
-	}
-	else if(agc)
-	{
-		syntaxCheck(stops);
-	}
-	else
-		syntaxCheck(stops - ID);
 }
 
 // constanr = numeral | booleanSymbol | constantName
-void Parser::constant(vector<Symbol> stops)
+void Parser::constant(int& tempValue, PL_Type& tempType, vector<Symbol> stops)
 {
 	outFile<<"constant()"<<endl;
 
 	if(lookAheadTok.getSymbol() == NUMERAL)
 	{
-		nameValue = lookAheadTok.getValue();
-		nameType = INTEGRAL;
+		tempValue = lookAheadTok.getValue();
+		tempType = INTEGRAL;
 		match(NUMERAL,stops);
 
 	}	
 	else if(lookAheadTok.getSymbol() == TRUE)
 	{
-		nameValue = 0;
-		nameType = BOOLEAN;
+		tempValue = 0;
+		tempType = BOOLEAN;
 		match(TRUE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == FALSE)
 	{
-		nameValue = 1;
-		nameType = BOOLEAN;
+		tempValue = 1;
+		tempType = BOOLEAN;
 		match(FALSE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == ID)
@@ -826,16 +913,16 @@ void Parser::constant(vector<Symbol> stops)
 				//found
 				else
 				{
-					nameValue = entry.value;
-					nameType = INTEGRAL;
+					tempValue = entry.value;
+					tempType = INTEGRAL;
 				}
 			}
 
 	}
 	else
 	{
-		nameValue = -3;
-		nameType = UNIVERSAL;
+		tempValue = -1;
+		tempType = UNIVERSAL;
 		admin.error(ParseE,lookAheadTok.getSymbol(),6);
 	}	
 }
@@ -886,7 +973,7 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 int Parser::matchName(Symbol sym , vector<Symbol> stops)
 {
 	int temp = -1;
-	nameTok = lookAheadTok;
+	//nameTok = lookAheadTok;
 	//it means the token is matched returns true
 	if(lookAheadTok.getSymbol() == sym)
 	{

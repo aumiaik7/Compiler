@@ -158,8 +158,8 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 		case ScopeE:
 		if(flag < 4)
 		{
-			string type[3] = {"variable", "constant", "procedure"};
-			cerr<<"Scope Error: Expecting name of type '"<<type[flag - 1]<<"' at line "<<lineNo<<endl;
+			string kind[3] = {"variable", "constant", "procedure"};
+			cerr<<"Scope Error: Expecting name of kind '"<<kind[flag - 1]<<"' at line "<<lineNo<<endl;
 		}
 		else if(flag == 4)
 		{
@@ -168,6 +168,11 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 		else if(flag == 5)
 		{
 			cerr<<"Scope Error: Ambiguous name at line "<<lineNo<<endl;
+		}
+		else if(flag == 6 || flag == 7)
+		{
+			string type[3] = {"Integer", "Boolean"};
+			cerr<<"Type Error: Expecting name of type '"<<type[flag - 6]<<"' at line "<<lineNo<<endl;
 		}
 		break;
 	}	
