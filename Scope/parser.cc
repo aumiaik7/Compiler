@@ -800,23 +800,28 @@ PL_Type Parser::factor(vector<Symbol> stops)
 			constant(stops);*/
 		TableEntry entry =  bTable.find(lookAheadTok.getValue(),bTable.error);
 		//not found
-		if(bTable.error)
+		/*if(bTable.error)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+			matchName(ID,stops);
 			return UNIVERSAL;
-		}
-		else if(entry.kind == VAR)
-		{
-			PL_Type tempType = variableAccess(stops);
-			return tempType;
-		}
-		else if (entry.kind == CONSTANT)
+		}*/
+		//else if(entry.kind == VAR)
+		//{
+		if (entry.kind == CONSTANT)
 		{
 			int tempValue;
 			PL_Type tempType;
 			constant(tempValue, tempType, stops);
 			return tempType;
 		}
+		else
+		{
+			PL_Type tempType = variableAccess(stops);
+			return tempType;
+		}
+
+
 
 	}
 	else if(in(ff.firstOfConstant()))
