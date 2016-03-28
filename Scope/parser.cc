@@ -340,12 +340,12 @@ void Parser::statement(vector<Symbol> stops)
 			//not found
 			if(bTable.error)
 			{
-				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
-				/**
-				 *
-				 *
-				 *
-				 */
+				admin.error(ScopeE,lookAheadTok.getSymbol(),4);
+			}
+			else if(entry.kind != PROCEDURE)
+			{
+				PL_Type tempType = variableAccess(stops);
+				//return tempType;
 			}
 			//found
 
@@ -373,11 +373,15 @@ void Parser::readStatement(vector<Symbol> stops)
 	outFile<<"readStatement()"<<endl;
 	
 	match(READ, ff.firstOfVAList() + stops);
-	variableAccessList(stops);
+	vector<PL_Type> typeList;
+	vector<PL_Type>().swap(typeList);
+	variableAccessList(stops,typeList);
+	//variableAccessList(stops);
 }
 
 // variableAccessList = variableAccess{','variableAccess}
-void Parser::variableAccessList(vector<Symbol> stops)
+//vector<PL_Type> Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type> typeList)
+void Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type>& varTypeList)
 {
 	outFile<<"variableAccessList()"<<endl;
 
@@ -385,20 +389,25 @@ void Parser::variableAccessList(vector<Symbol> stops)
 	stopSet.push_back(COMMA);
 	stopSet.push_back(ID);
 	
-	variableAccess(stopSet + stops);
+	PL_Type tempType = variableAccess(stopSet + stops);
+	//typeList  = typeList + tempType;
+	varTypeList.push_back(tempType);
 
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
-		variableAccessList(stops);
+		variableAccessList(stops, varTypeList);
+		//variableAccessList(stops);
 	}
 	else if(in(ff.followOfVaList()))
 	{
 		syntaxCheck(stops);		
+		//return typeList;
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
+		//return typeList;
 	}			
 }
 
@@ -408,26 +417,37 @@ void Parser::writeStatement(vector<Symbol> stops)
 	outFile<<"writeStatement()"<<endl;
 	
 	match(WRITE, ff.firstOfExpList() + stops);
-	expressionList(stops);
+	vector<PL_Type> typeList;
+	vector<PL_Type>().swap(typeList);
+	expressionList(stops,typeList);
+	//expressionList(stops);
 }
 
 // expressionList = expression {','expression}
-void Parser::expressionList(vector<Symbol> stops)
+//vector<PL_Type> Parser::expressionList(vector<Symbol> stops, vector<PL_Type> typeList)
+void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 {
 	outFile<<"expressionList()"<<endl;
 	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(COMMA);
 
-	expression(stopSet + stops);
+
+	PL_Type tempType = expression(stopSet + stops,0);
+	//typeList  = typeList + tempType;
+	typeList.push_back(tempType);
 	
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfExpList() + stops);
-		expressionList(stops);
+		expressionList(stops,typeList);
+		//expressionList(stops);
 	}
 	else
+	{
 		syntaxCheck(stops - ID);
+		//return typeList;
+	}
 		
 }
 
@@ -439,9 +459,27 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ASSIGN);
 	
-	variableAccessList(stopSet + stops);
+	vector<PL_Type> varTypeList;
+	vector<PL_Type>().swap(varTypeList);
+	//vector<PL_Type> varTempType =
+	variableAccessList(stopSet + stops,varTypeList);
+	//variableAccessList(stopSet + stops);
 	match(ASSIGN, ff.firstOfExpList() + stops);
-	expressionList(stops);
+	vector<PL_Type> typeList;
+	vector<PL_Type>().swap(typeList);
+	//vector<PL_Type> varTempType =
+	expressionList(stops,typeList);
+	//expressionList(stops);
+	if(varTypeList.size() != typeList.size())
+	{
+		admin.error(ScopeE,lookAheadTok.getSymbol(),8);
+	}
+	else
+	{
+		for(int i = 0; i < varTypeList.size(); i++)
+			if(varTypeList.at(i) !=  typeList.at(i))
+				admin.error(ScopeE,lookAheadTok.getSymbol(),9);
+	}
 }
 
 // ifStatement = 'if' guardedCommandList 'fi' 
@@ -510,7 +548,7 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	stopSet.push_back(RIGHTP);
 	//This flag is used to resolve some issues that arises conflicts between stop sets 
 	agc = true;
-	expression(stopSet + ff.firstOfStatement() + stops);
+	PL_Type tempType = expression(stopSet + ff.firstOfStatement() + stops,0);
 	agc = false;
 	
 	match(GC2, ff.firstOfStatement() + stops);
@@ -518,20 +556,27 @@ void Parser::guardedCommand(vector<Symbol> stops)
 }
 
 // expression = primaryExpression{primaryOperator primaryExpression}	
-void Parser::expression(vector<Symbol> stops)
+PL_Type Parser::expression(vector<Symbol> stops,int flag)
 {
 	outFile<<"expression()"<<endl;	
 	
 	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
-	
+	if(flag == 1)
+	{
+		if(tempType != BOOLEAN)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),7);
+		}
+	}
 	if(in(ff.firstOfPrimOp()))
 	{
 		if(tempType != BOOLEAN)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),7);
 		}
+
 		primaryOperator(ff.firstOfExpList() + stops);
-		expression(stops);
+		expression(stops,1);
 		return tempType;
 	}
 	else if(agc)
@@ -576,8 +621,13 @@ PL_Type Parser::primaryExpression(vector<Symbol> stops)
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
 		}
 		relationalOperator(stops);
-		simpleExpression(stops);
-		return tempType;
+		tempType = simpleExpression(stops);
+
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
+		return BOOLEAN;
 	}
 	else
 	{
@@ -615,7 +665,7 @@ void Parser::relationalOperator(vector<Symbol> stops)
 }
 
 // simpleExpression = ['-'] term {addingOperator term}
-PL_type Parser::simpleExpression(vector<Symbol> stops)
+PL_Type Parser::simpleExpression(vector<Symbol> stops)
 {
 	outFile<<"simpleExpression()"<<endl;
 	
@@ -624,7 +674,7 @@ PL_type Parser::simpleExpression(vector<Symbol> stops)
 		match(MINUS, ff.firstOfTerm() + stops);	
 	}
 
-	PL_Type tempType = term(ff.firstOfAddOp() + stops);
+	PL_Type tempType = term(ff.firstOfAddOp() + stops,0);
 		
 	if(in(ff.firstOfAddOp()))
 	{
@@ -668,18 +718,28 @@ void Parser::addopTerm(vector<Symbol> stops)
 	if(in(ff.firstOfAddOp()))
 	{
 		addingOperator(stops);
-		term(stops);
+		PL_Type tempType = term(stops,0);
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
 		addopTerm(stops);
 	}
 }
 
 // term = factor {multiplyingOperator factor}
-PL_Type Parser::term(vector<Symbol> stops)
+PL_Type Parser::term(vector<Symbol> stops,int flag)
 {
 	outFile<<"term()"<<endl;
 	
 	PL_Type tempType = factor(ff.firstOfMultOp() + stops);
-	
+	if(flag == 1)
+	{
+		if(tempType != INTEGRAL)
+		{
+			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
+		}
+	}
 	if(in(ff.firstOfMultOp()))
 	{
 		if(tempType != INTEGRAL)
@@ -688,7 +748,8 @@ PL_Type Parser::term(vector<Symbol> stops)
 		}
 		multiplyingOperator(stops);
 
-		term(stops);
+		PL_Type tempType = term(stops,1);
+
 	}	
 	else if(in(ff.followOfExpression()))
 	{
@@ -771,14 +832,10 @@ PL_Type Parser::factor(vector<Symbol> stops)
 		stopSet.push_back(RIGHTP);
 	
 		match(LEFTP, ff.firstOfExpList() + stopSet + stops);
-		expression(stopSet + stops);	
+		PL_Type tempType = expression(stopSet + stops,0);
 		match(RIGHTP,stops);
-		/*
-		 *
-		 *
-		 *
-		 *
-		 */
+
+		return tempType;
 	}
 	else if(lookAheadTok.getSymbol() == NOT)
 	{
@@ -794,7 +851,7 @@ PL_Type Parser::factor(vector<Symbol> stops)
 }
 
 //variableAccess = variableName [indexSelector]
-PL_type Parser::variableAccess(vector<Symbol> stops)
+PL_Type Parser::variableAccess(vector<Symbol> stops)
 {
 	outFile<<"variableAccess()"<<endl;	
 	
@@ -813,19 +870,6 @@ PL_type Parser::variableAccess(vector<Symbol> stops)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),1);
 		}
-		//found
-		else
-		{
-			/*
-			 *
-			 *
-			 *
-			 *
-			 */
-			//nameValue = entry.value;
-			//nameType = INTEGRAL;
-			//return entry.type;
-		}
 
 		if(in(ff.firstOfIndexSel()))
 		{
@@ -837,16 +881,10 @@ PL_type Parser::variableAccess(vector<Symbol> stops)
 			stopSet.push_back(RIGHTBRACKET);
 
 			match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
-			expression(stopSet + stops);
-			/*
-			 *
-			 *
-			 *
-			 *
-			 *
-			 *
-			 */
+			PL_Type tempType = expression(stopSet + stops,0);
 			match(RIGHTBRACKET,stops);
+
+			return tempType;
 		}
 		else if(agc)
 		{
@@ -1042,8 +1080,8 @@ void Parser::lookAheadToken()
 
 
 //Syntex Error recovery
-// when any error occured we try find the next possible valid
-// symbol (stop symbol) that can occur after the error. 
+//when any error occured we try find the next possible valid
+//symbol (stop symbol) that can occur after the error.
 
 void Parser::syntaxError(vector<Symbol> stops)
 {
@@ -1114,6 +1152,29 @@ bool Parser::in(vector<Symbol> set)
 	return false;
 }
 
+
+//operation for 2 vectors. Each vector is set of symbols
+//+ operator overloading for vector
+/*vector<PL_Type> operator+(vector<PL_Type> set, PL_Type type)
+{
+	vector<PL_Type> mergedSet;
+
+
+	if(set.size() == 0)
+	{
+		mergedSet.reserve(1);
+		mergedSet.insert(mergedSet.end(),type);
+	}
+	else
+	{
+		mergedSet.reserve(set.size() + 1);
+		mergedSet.insert(mergedSet.end(), set.begin(), set.end());
+		mergedSet.insert(mergedSet.end(),type);
+	}
+
+	return mergedSet;
+
+}*/
 
 	
 

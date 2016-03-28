@@ -174,6 +174,14 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 			string type[3] = {"Integer", "Boolean"};
 			cerr<<"Type Error: Expecting name of type '"<<type[flag - 6]<<"' at line "<<lineNo<<endl;
 		}
+		else if(flag == 8)
+		{
+			cerr<<"Size Error: Size of variable list and expression list mismatch at line "<<lineNo<<endl;
+		}
+		else if(flag == 9)
+		{
+			cerr<<"Type Error: Type mismatch in assignment statement at line "<<lineNo<<endl;
+		}
 		break;
 	}	
 }	

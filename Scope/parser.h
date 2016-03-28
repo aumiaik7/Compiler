@@ -85,11 +85,13 @@ class Parser
 	// readStatement = 'read' variableAccessList
 	void readStatement(vector<Symbol>);
 	// variableAccessList = variableAccess{','variableAccess}
-	void variableAccessList(vector<Symbol>);
+	//vector<PL_Type> variableAccessList(vector<Symbol>,vector<PL_Type> );
+	void variableAccessList(vector<Symbol>, vector<PL_Type>& );
 	// writeStatement = 'write' expressionList  
 	void writeStatement(vector<Symbol>);
 	// expressionList = expression {','expression}
-	void expressionList(vector<Symbol>);
+	//vector<PL_Type> expressionList(vector<Symbol>, vector<PL_Type> );
+	void expressionList(vector<Symbol>,vector<PL_Type>&);
 	// assignmentStatement = variableAccessList ':=' expressionList
 	void assignmentStatement(vector<Symbol>);
 	// ifStatement = 'if' guardedCommandList 'fi' 
@@ -101,7 +103,7 @@ class Parser
 	// guardedCommand = expression '->' statementPart
 	void guardedCommand(vector<Symbol>);
 	// expression = primaryExpression{primaryOperator primaryExpression}	
-	void expression(vector<Symbol>);
+	PL_Type expression(vector<Symbol>,int);
 	// primaryOperator = '&' | '|'
 	void primaryOperator(vector<Symbol>);	
 	// primaryExpression = simpleExpression [relationalOperator simpleExpression]
@@ -109,13 +111,13 @@ class Parser
 	// relationalOperator = '<' | '=' | '>'	
 	void relationalOperator(vector<Symbol>);
 	// simpleExpression = ['-'] term {addingOperator term}
-	PL_type simpleExpression(vector<Symbol>);
+	PL_Type simpleExpression(vector<Symbol>);
 	// addingOperator = '+' | '-'
 	void addingOperator(vector<Symbol>);
 	//helps to execute {addingOperator term}
 	void addopTerm(vector<Symbol>);
 	// term = factor {multiplyingOperator factor}
-	PL_Type term(vector<Symbol>);
+	PL_Type term(vector<Symbol>,int);
 	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator(vector<Symbol>);
 	// factor = constant | variableAccess | '('expression')' | '~' factor	
@@ -144,6 +146,7 @@ class Parser
 	
 		
 };
+vector<PL_Type> operator+(vector<PL_Type> , PL_Type);
 //vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2);
 //vector<Symbol> operator+(vector<Symbol> stops, Symbol sym);
 

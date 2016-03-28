@@ -5,7 +5,7 @@ begin
 
 	proc Search
 	begin integer m;
-	i,m:=1,n;
+	i,m:=1,found;
 	do i<m ->
 		if A[i] = x->m:=i;[]
 			~(A[i] = x)->i:=i+1;
