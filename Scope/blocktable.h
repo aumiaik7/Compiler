@@ -29,16 +29,18 @@ class BlockTable
 	//vector of block table	
 	typedef vector<TableEntry> table;
 	typedef vector<table> block;
+	//vector of vector
 	block myBlock;
-	//typedef vector< vector<TableEntry> > blockTable(MAXBLOCKS,vector<TableEntry>(MAXDEFINITIONS));
 	
 
 	public:
 	//default constructor
 	BlockTable();
 	~BlockTable(){};
+	//error is false if a name is found in block table
+	//true otherwise
 	bool error;
-	//return true if the id we are looking for is found
+	//returns true if the id we are looking for is found
 	//in the current block. false otherwise
 	bool search(int);
 	//returns true if the current block doesn't contain 
@@ -54,6 +56,7 @@ class BlockTable
 	void newBlock();
 	//setSize for Arrays
 	void setArraySize(int,int);
+	//index for name definitions
 	int def;
 		
 };

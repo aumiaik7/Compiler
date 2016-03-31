@@ -183,6 +183,7 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		//set array size
 		if(tempType == INTEGRAL)
 		{
+			//set array size of the declared variable in block table
 			bTable.setArraySize(defPosition,tempValue);
 		}
 		else
@@ -209,9 +210,7 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 	
 	int id = matchName(ID, stopSet + stops);
 	
-	block(stops);
-
-	if(id != -1)
+		if(id != -1)
 	{
 		bool isDefined = bTable.define(id,PROCEDURE,INTEGRAL,1,1);
 		if(!isDefined)
@@ -220,6 +219,9 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
 		}
 	}
+	block(stops);
+
+
 }
 
 // typeSymbol = 'integer' | 'Boolean'
@@ -346,8 +348,7 @@ void Parser::statement(vector<Symbol> stops)
 			//found but kind is not procedure
 			else if(entry.kind != PROCEDURE)
 			{
-				PL_Type tempType = variableAccess(stops);
-				//return tempType;
+				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
 			}
 		}
 				
@@ -727,6 +728,8 @@ PL_Type Parser::term(vector<Symbol> stops,int flag)
 	outFile<<"term()"<<endl;
 	
 	PL_Type tempType = factor(ff.firstOfMultOp() + stops);
+	//flag = 1 means Multiplying operator is parsed so the
+	//type of factor is expected to be integral
 	if(flag == 1)
 	{
 		if(tempType != INTEGRAL)
@@ -736,6 +739,8 @@ PL_Type Parser::term(vector<Symbol> stops,int flag)
 	}
 	if(in(ff.firstOfMultOp()))
 	{
+		//Multiplying operator is present so the
+		//type of factor is expected to be integral
 		if(tempType != INTEGRAL)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
@@ -788,20 +793,9 @@ PL_Type Parser::factor(vector<Symbol> stops)
 	
 	if(lookAheadTok.getSymbol() == ID)
 	{
-		/*if(lookAheadTok.getIDtype() == 1)
-			variableAccess(stops);
-		else if(lookAheadTok.getIDtype() == 2)
-			constant(stops);*/
+
 		TableEntry entry =  bTable.find(lookAheadTok.getValue(),bTable.error);
-		//not found
-		/*if(bTable.error)
-		{
-			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
-			matchName(ID,stops);
-			return UNIVERSAL;
-		}*/
-		//else if(entry.kind == VAR)
-		//{
+
 		if (entry.kind == CONSTANT)
 		{
 			int tempValue;
@@ -853,7 +847,6 @@ PL_Type Parser::factor(vector<Symbol> stops)
 PL_Type Parser::variableAccess(vector<Symbol> stops)
 {
 	outFile<<"variableAccess()"<<endl;	
-	
 
 	//look for the variable Name in block table
 	int id = matchName(ID, stops);
@@ -865,6 +858,7 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),4);
 		}
+		//found but kind is not variable
 		else if(entry.kind != VAR)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),1);
@@ -896,11 +890,6 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 			return entry.type;
 		}
 	}
-	//if(lookAheadTok.getIDtype() != 1)
-	//		admin.error(ParseE,lookAheadTok.getSymbol(),1);
-	//	match(ID, ff.firstOfIndexSel() + stops);
-	
-	
 }
 
 // constanr = numeral | booleanSymbol | constantName
@@ -929,33 +918,31 @@ void Parser::constant(int& tempValue, PL_Type& tempType, vector<Symbol> stops)
 	}
 	else if(lookAheadTok.getSymbol() == ID)
 	{
-		//find value from block table
-		//later
-
-			//if(lookAheadTok.getIDtype() != 2)
-			//look for the constantName in block table
-			int id = matchName(ID, stops);
-			if(id != -1)
+		//look for the constantName in block table
+		int id = matchName(ID, stops);
+		if(id != -1)
+		{
+			TableEntry entry =  bTable.find(id,bTable.error);
+			//not found
+			if(bTable.error)
 			{
-				TableEntry entry =  bTable.find(id,bTable.error);
-				//not found
-				if(bTable.error)
-				{
-					admin.error(ScopeE,lookAheadTok.getSymbol(),4);
-				}
-				else if(entry.kind != CONSTANT)
-				{
-					admin.error(ScopeE,lookAheadTok.getSymbol(),2);
-				}
-				//found
-				else
-				{
-					tempValue = entry.value;
-					tempType = INTEGRAL;
-				}
+				admin.error(ScopeE,lookAheadTok.getSymbol(),4);
 			}
+			//fount but kind is not constant
+			else if(entry.kind != CONSTANT)
+			{
+				admin.error(ScopeE,lookAheadTok.getSymbol(),2);
+			}
+			//found
+			else
+			{
+				tempValue = entry.value;
+				tempType = INTEGRAL;
+			}
+		}
 
 	}
+	//constant not found
 	else
 	{
 		tempValue = -1;
@@ -1010,8 +997,8 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 int Parser::matchName(Symbol sym , vector<Symbol> stops)
 {
 	int temp = -1;
-	//nameTok = lookAheadTok;
-	//it means the token is matched returns true
+
+	//it means the token is matched returns position from symbol table
 	if(lookAheadTok.getSymbol() == sym)
 	{
 		//index position of name symbol in symbol table
@@ -1108,7 +1095,6 @@ void Parser::syntaxCheck(vector<Symbol> stops)
 	//grab a look ahead token
 	while(1)
 	{	
-		
 		//newline detected
 		if(lookAheadTok.getSymbol() == NEWLINE)
 		{
@@ -1152,28 +1138,7 @@ bool Parser::in(vector<Symbol> set)
 }
 
 
-//operation for 2 vectors. Each vector is set of symbols
-//+ operator overloading for vector
-/*vector<PL_Type> operator+(vector<PL_Type> set, PL_Type type)
-{
-	vector<PL_Type> mergedSet;
 
-
-	if(set.size() == 0)
-	{
-		mergedSet.reserve(1);
-		mergedSet.insert(mergedSet.end(),type);
-	}
-	else
-	{
-		mergedSet.reserve(set.size() + 1);
-		mergedSet.insert(mergedSet.end(), set.begin(), set.end());
-		mergedSet.insert(mergedSet.end(),type);
-	}
-
-	return mergedSet;
-
-}*/
 
 	
 

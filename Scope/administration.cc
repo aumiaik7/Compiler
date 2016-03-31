@@ -190,7 +190,7 @@ void Administration::error(errorkind error,Symbol sym,int flag)
 //Completion message
 void Administration::done()
 {
-	cout<<endl<<"<<<Parsing Done>>>"<<endl;
+	cout<<endl<<"<<<Type, Scope checking and Parsing Done>>>"<<endl;
 	cout<<"The methods called for nonterminals are showed in ParserOutFile "<<endl;
 	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
 }

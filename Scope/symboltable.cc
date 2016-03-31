@@ -54,7 +54,7 @@ Token Symboltable::insert(string s,int type)
 	if(isOccupied == -1)
 	{	
 		Token tk(ID,position,s);
-		tk.setIDtype(type);			
+		//tk.setIDtype(type);
 		htable.at(position) = tk;
 		//tk = htable.at(position);
 		occupied++;
@@ -75,7 +75,7 @@ Token Symboltable::insert(string s,int type)
 			{	
 				
 				Token tk(ID,position,s);
-				tk.setIDtype(type);
+				//tk.setIDtype(type);
 				htable.at(position) = tk;
 				//tk = htable.at(position);
 				occupied++;
@@ -156,7 +156,6 @@ void Symboltable::insert(Token tok)
 				{
 					position = 0;
 				}
-			
 				else
 					position++;				
 				

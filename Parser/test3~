@@ -1,4 +1,7 @@
-$ A program to compute the nth fibonacci number. The sequence goes 1, 1, 2, 3, 5, 8, 11, .... Demonstrates  
+Sample PL program  
+$ A program to compute the nth 
+fibonacci
+ number. The sequence goes 1, 1, 2, 3, 5, 8, 11, .... Demonstrates  
 $ support for recursion  in PL language. 
 begin 
 integer temp; 
@@ -24,4 +27,26 @@ write temp;
 end. 
 Assembly code  
 
+$PL Program: sample
+begin
+	const z = 3147483647 ;integer array A[z];
+	integer z,j,J; Boolean found;
 
+proc Search
+	begin integer m;
+i,m:=1,n;
+	
+
+	do i<m ->
+
+		if A[i] = x->m:=i;[]
+			~(A[i] = x)->i:=i+1;
+		
+		fi;
+	od;
+
+
+
+	found := A[i] = x;
+	end
+end.
