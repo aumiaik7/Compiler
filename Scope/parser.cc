@@ -120,16 +120,20 @@ void Parser::constantDefinition(vector<Symbol> stops)
 	
 	match(CONST , ff.firstOfConstant() + stopSet + stops);
 	
+	//matchName is match function for matching name symbols
 	int id = matchName(ID, stopSet + stops);
 	
 	match(EQUAL , ff.firstOfConstant() + stops);
 	
+	//scope and type check
 	int tempValue;//for constant value
 	PL_Type tempType;//for type of constant
 	constant(tempValue, tempType, stops);
 	
+
 	if(id != -1)
 	{
+		//define the name in block table
 		bool isDefined = bTable.define(id,CONSTANT,tempType,1,tempValue);
 		if(!isDefined)
 		{
@@ -176,13 +180,14 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		constant(tempValue, tempType, stopSet + stops);
 		match(RIGHTBRACKET , stops);
 
+		//set array size
 		if(tempType == INTEGRAL)
 		{
 			bTable.setArraySize(defPosition,tempValue);
 		}
 		else
 		{
-			//
+			//array size type must be integral
 			admin.error(ScopeE,lookAheadTok.getSymbol(),2);
 		}
 	}
@@ -330,10 +335,6 @@ void Parser::statement(vector<Symbol> stops)
 
 		if(lookAheadTok.getSymbol() == ID )	
 		{
-			/*if(lookAheadTok.getIDtype() != 3)
-				admin.error(ParseE,lookAheadTok.getSymbol(),3);	
-			match(ID, stops);
-			*/
 			//look for the procedure name in block table
 			int id = matchName(ID, stops);
 			TableEntry entry =  bTable.find(id,bTable.error);
@@ -342,13 +343,12 @@ void Parser::statement(vector<Symbol> stops)
 			{
 				admin.error(ScopeE,lookAheadTok.getSymbol(),4);
 			}
+			//found but kind is not procedure
 			else if(entry.kind != PROCEDURE)
 			{
 				PL_Type tempType = variableAccess(stops);
 				//return tempType;
 			}
-			//found
-
 		}
 				
 	}
@@ -376,11 +376,9 @@ void Parser::readStatement(vector<Symbol> stops)
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
 	variableAccessList(stops,typeList);
-	//variableAccessList(stops);
 }
 
 // variableAccessList = variableAccess{','variableAccess}
-//vector<PL_Type> Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type> typeList)
 void Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type>& varTypeList)
 {
 	outFile<<"variableAccessList()"<<endl;
@@ -390,24 +388,20 @@ void Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type>& varTypeLi
 	stopSet.push_back(ID);
 	
 	PL_Type tempType = variableAccess(stopSet + stops);
-	//typeList  = typeList + tempType;
 	varTypeList.push_back(tempType);
 
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
 		variableAccessList(stops, varTypeList);
-		//variableAccessList(stops);
 	}
 	else if(in(ff.followOfVaList()))
 	{
 		syntaxCheck(stops);		
-		//return typeList;
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
-		//return typeList;
 	}			
 }
 
@@ -420,11 +414,9 @@ void Parser::writeStatement(vector<Symbol> stops)
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
 	expressionList(stops,typeList);
-	//expressionList(stops);
 }
 
 // expressionList = expression {','expression}
-//vector<PL_Type> Parser::expressionList(vector<Symbol> stops, vector<PL_Type> typeList)
 void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 {
 	outFile<<"expressionList()"<<endl;
@@ -434,19 +426,16 @@ void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 
 
 	PL_Type tempType = expression(stopSet + stops,0);
-	//typeList  = typeList + tempType;
 	typeList.push_back(tempType);
 	
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfExpList() + stops);
 		expressionList(stops,typeList);
-		//expressionList(stops);
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
-		//return typeList;
 	}
 		
 }
@@ -461,15 +450,14 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 	
 	vector<PL_Type> varTypeList;
 	vector<PL_Type>().swap(varTypeList);
-	//vector<PL_Type> varTempType =
 	variableAccessList(stopSet + stops,varTypeList);
-	//variableAccessList(stopSet + stops);
 	match(ASSIGN, ff.firstOfExpList() + stops);
+
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
-	//vector<PL_Type> varTempType =
 	expressionList(stops,typeList);
-	//expressionList(stops);
+
+	//size of variable access list and expression list must be same
 	if(varTypeList.size() != typeList.size())
 	{
 		admin.error(ScopeE,lookAheadTok.getSymbol(),8);
@@ -534,7 +522,6 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 	{
 		syntaxCheck(stops - ID);
 	}
-	
 }
 
 // guardedCommand = expression '->' statementPart
@@ -561,6 +548,8 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag)
 	outFile<<"expression()"<<endl;	
 	
 	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
+	//flag = 1 means this functions is called recursively and the type is boolean
+	//as primary operator is present
 	if(flag == 1)
 	{
 		if(tempType != BOOLEAN)
@@ -570,6 +559,7 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag)
 	}
 	if(in(ff.firstOfPrimOp()))
 	{
+		//as primary operator is present then primary expression is expected to be boolean
 		if(tempType != BOOLEAN)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),7);
@@ -616,6 +606,8 @@ PL_Type Parser::primaryExpression(vector<Symbol> stops)
 	
 	if(in(ff.firstOfRelOp()))
 	{
+		//relational operator is present so simple expression is expected
+		//to be integral
 		if(tempType != INTEGRAL)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
@@ -623,6 +615,8 @@ PL_Type Parser::primaryExpression(vector<Symbol> stops)
 		relationalOperator(stops);
 		tempType = simpleExpression(stops);
 
+		//relational operator is present so simple expression is expected
+		//to be integral
 		if(tempType != INTEGRAL)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
