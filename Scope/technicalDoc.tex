@@ -53,11 +53,11 @@
 \normalfont \normalsize 
 \textsc{University of Lethbridge} \\ [25pt] % Your university, school and/or department name(s)
 \horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
-\huge Technical Documentation of Compiler construction (Upto phase-II)\\ % The assignment title
+\huge Technical Documentation of Compiler construction (Upto phase-III)\\ % The assignment title
 \horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
 }
 
-\author{} % Your name
+\author{Lazima Ansari(001188187) \\ Ahamad Imtiaz Khan(001188188)} % Your name
 
 %\date{\normalsize\today} % Today's date or a custom date
 \begin{document}
@@ -65,8 +65,57 @@
 \newpage
 
 
+{\bf {\huge Scope and Type Check:}}\\
+Type and scope checking is the third phase of compiler construction. In syntax analysis phase parser checks that if the tokens are arranged in a syntactically correct form or not. In this phase we look deeper to check that whether the tokens form a sensible set of instructions. It is also called semantic analysis. For example English language has structure. It consists of subject and predicate. Correct sequence of these make a semantically correct sentence. If we want our PL to be semantically valid all of our variables must be properly defined and types of the variables must be valid. Semantic analysis is the last phase to wipe out errors from source code. Before going to code generation phase we want to make it sure. We perform two types of checking in semantic analysis.\\
 
-{\bf Syntax Analysis:}
+$\bullet$ Scope check\\
+$\bullet$ Type check\\
+
+Before describing scope and type check we would like to discuss about block table which is used in both scope and type checking.\\
+
+{\bf Block Table}\\
+$\bullet$ Associated Files: blocktable.h blocktable.cc\\
+Our Block table is actually a vector of vectors. Rows of the vector represent individual blocks of source code and row consists of several vectors which are actually TableEntry of the variables. blocktable.h is the interface of the class in which Block table is implemented and the implementation is done inside blocktable.cc. Brief description of the important methods of this class are given below.\\
+{\bf bool search(int) :} This method returns true if the id we are looking for is found in the current block and returns false otherwise.\\
+{\bf bool define(int, PL\textunderscore Kind, PL\textunderscore Type, int, int):} This method creates new entry in block table based on blockTable variable. It returns true if the current block doesn't contain an object with our current id after creating an entry. Otherwise it returns false indicating ambiguous name i.e there is already a definition for the specific id 
+in the current block. When we create an entry we insert an structure in Block table. The structure is given below so that we can understand what type of information we store in Block Table.\\
+
+\begin{lstlisting}
+typedef struct
+{
+int id;//position of name in symbol table
+PL_Kind kind;// kind of name
+PL_Type type;// data type of name
+int size; // size of name
+int value; // numerical value
+}TableEntry;
+\end{lstlisting}
+\pagebreak
+{\bf TableEntry find(int, bool\&):} Using this method we search the entire table for an id in inside out fashion. Variable error is false if the id we are looking for is in
+the block table. error is true if not found in the Block table.\\
+
+Now come to scope and type check:\\
+
+{\bf Scope check:}
+$\bullet$ Associated Files: parser.h parser.cc\\
+No new file is needed for scope check. We just need to modify some methods inside parser class. We know that there are two parts inside a block of our PL. They are definitionPart and statementPart. definitionPart has some sub divisions like constantDefinition, variableDefinition, procedureDefinition and each of them has corresponding methods. Before returning from these methods we create entries for constantName, variableName and procedureName in  block table. While creating an entry we set appropriate kind and type of these names. While creating an entry we also check that if the name is already inserted in the current block. If it's there then we show ambiguous name error.\\
+In statementPart we simply check if the name is defined or not and we also check whether the name is of correct kind. For example inside procedureStament when we match procedureName we check its existence in block table, if it exists we check if it's kind is PROCEDURE. If one the the two condition is false we show error message. \\
+
+{\bf Type check :}      
+$\bullet$ Associated Files: parser.h parser.cc\\
+Our PL is quite simple. There are only two types in our PL. They are integer and Boolean. In definitionPart we set the types of the individual names. For example inside method variableDefinition(vector<Symbol>) when typeSymbol(vector<Symbol>) method is  called we get the type of our variableName. Previously the return type of typeSymbol(vector<Symbol>) was void now we changed it to PL\_Type so after calling this method we get the type for variableName. We did this and similar kind of modifications in some other methods of the parser that makes sure that the source code semantically correct or shows error if not. Other than definitionPart we modified numbers of methods of statementPart for type checking. For example\\
+
+guarderCommand = expression '->' statementPart\\
+
+Here expression must be of type BOOLEAN. Method that corresponds to expression has now return type PL\_Type and when expression calls primaryExpression and inside primaryExpression if relationaOperatior is called after simpleExpression we know that the type of the primaryExpression is Boolean so it returns BOOLEAN (otherwise INTEGER and return type of primary expression is also changed to PL\_Type). Finally expression method returns BOOLEAN. \\
+For fulfilling this purpose we modified 17 methods of our parser so that it can perform type checking.\\
+
+{\bf matchName(Symbol , vector<Symbol> ):}
+We have declared this new method only for matching names. The purpose is quite similar to our match(Symbol sym , vector<Symbol> stops) function. The difference after matching the name it returns the position of the name in symbol table which is stored as id in TableEntry in block table.           
+
+\pagebreak
+
+{\bf {\huge Syntax Analysis:}}\\
 Syntax analysis is the second phase of compiler construction. Lexical analyzer processes stream of individual characters to token. Syntax analyzer or parser takes stream of tokens as input and with the help of Context Free Grammer (CFG) parse the stream of tokens we get from source file. Context free grammar is made up of four components:
 
 $\bullet$ A set of non-terminals : Generate grammar.\\
@@ -168,7 +217,7 @@ Error reporting is not done inside parser.cc or scanner.cc. These files detected
 
 \pagebreak
 
-{\bf Lexical Analysis:}\\
+{\bf {\huge Lexical Analysis:}}\\
 Lexical analysis or scanning is the process where the stream of characters making up the source program is read from left-to-right and grouped into tokens. Lexical analyser, which is also known as scanner development is the first phase of compiler design. The purpose of scanner is to process stream of individual characters to tokens which will be used in the next phase of the compiler. In this project we have developed a scanner that is actually a finite state machine that continues to read input stream until it reaches to the end of file and produces a list of tokens from the source file.\\
 For building a scanner we divided our project into 4 parts. They are as follows:\\
 $\bullet$ Driver\\
