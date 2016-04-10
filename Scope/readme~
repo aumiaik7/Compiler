@@ -4,7 +4,7 @@ Ahamad Imtiaz Khan 	(001188188)
 
 ->Name of the files included: Makefile, readme, technicalDoc.tex
 
-Source code: administration.cc, administration.h, plc.cc, parser.cc, parser.h, firstfollow.cc, firstfollow.h, blocktable.h, blocktable.cc, scanner.cc, scanner.h, symbol.h, symboltable.cc, symboltable.h, token.cc, token.h, type.h (new: parser.cc, parser.h, firstfollow.cc, firstfollow.h, blocktable.h, blocktable.cc, type.h) 
+Source code: administration.cc, administration.h, plc.cc, parser.cc, parser.h, firstfollow.cc, firstfollow.h, blocktable.h, blocktable.cc, scanner.cc, scanner.h, symbol.h, symboltable.cc, symboltable.h, token.cc, token.h (new: parser.cc, parser.h, firstfollow.cc, firstfollow.h, blocktable.h, blocktable.cc) 
 
 Test files: test1(BH appendix code),test2 (class example),test3 (fibonacchi),test4(intentional error done on test1), test5, test6, test7. Some errors implanted intentionally in test4, test5, and test7 files
 

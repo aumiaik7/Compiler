@@ -37,6 +37,8 @@ bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nV
 		myBlock[blockLevel][def].type = nType;
 		myBlock[blockLevel][def].size = nSize;
 		myBlock[blockLevel][def].value = nValue;
+		myBlock[blockLevel][def].rbl = blockLevel;
+		myBlock[blockLevel][def].disp = def + 3;
 
 		def++;
 
@@ -72,15 +74,17 @@ TableEntry BlockTable::find(int idToLook, bool &err)
 
 }
 //new block in stack
-void BlockTable::newBlock()
+bool BlockTable::newBlock()
 {
 	def = 0;
 	blockLevel++;
 	if(blockLevel > 9)
 	{
-		cerr<<"Symbol table is full. Program exits"<<endl;
-		exit(0);
+		return false;
+		//cerr<<"Symbol table is full. Program exits"<<endl;
+		//exit(0);
 	}
+	return true;
 }
 //setSize for Arrays
 void BlockTable::setArraySize(int defPosition, int size)

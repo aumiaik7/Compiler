@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include "type.h"
 #define MAXBLOCKS 10
-#define MAXDEFINITIONS 20
+#define MAXDEFINITIONS 30
 
 using namespace std;
 
@@ -18,6 +18,8 @@ typedef struct
 	PL_Type type;
 	int size;
 	int value;
+	int rbl; //relative block level
+	int disp; // displacement
 }TableEntry;
 
 class BlockTable
@@ -53,7 +55,7 @@ class BlockTable
 	//error is true if not found in the blocktable
 	TableEntry find(int, bool &);
 	//new block
-	void newBlock();
+	bool newBlock();
 	//setSize for Arrays
 	void setArraySize(int,int);
 	//index for name definitions

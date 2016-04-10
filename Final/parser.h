@@ -63,21 +63,21 @@ class Parser
 	// program = block '.'
 	void program(Symbol);
 	// block = 'begin' definitionPart statementPart 'end'
-	void block(vector<Symbol>);
+	void block(int,int,vector<Symbol>);
 	// definitionPart = {definition';'}
-	void definitionPart(vector<Symbol>);
+	void definitionPart(int&,vector<Symbol>);
 	// definition = constantDefinition | variableDefinition | procedureDefinition
-	void definition(vector<Symbol>);
+	void definition(int&,vector<Symbol>);
 	// constantDefinition = 'const' constName '='  constant;
 	void constantDefinition(vector<Symbol>);
 	// variableDefinition = typeSymbol variableList | typeSymbol 'array' variableList'['constant']'
-	void variableDefinition(vector<Symbol>);
+	void variableDefinition(int&,vector<Symbol>);
 	// procedureDefinition = 'proc' procedureName block
-	void procedureDefinition(vector<Symbol>);
+	void procedureDefinition(int&,vector<Symbol>);
 	// typeSymbol = 'integer' | 'Boolean'
 	PL_Type typeSymbol(vector<Symbol>);
 	// variableList = variableName {',' variableName}
-	void variableList(PL_Type,vector<Symbol>);
+	void variableList(PL_Type,int&,vector<Symbol>);
 	// statementPart = {statement';'}
 	void statementPart(vector<Symbol>);
 	// statement = emptyStatement | readStatement | writeStatement |  assignmentStatement | ifStatement | doStatement 
@@ -103,7 +103,7 @@ class Parser
 	// guardedCommand = expression '->' statementPart
 	void guardedCommand(vector<Symbol>);
 	// expression = primaryExpression{primaryOperator primaryExpression}	
-	PL_Type expression(vector<Symbol>,int);
+	PL_Type expression(vector<Symbol>,int,Symbol);
 	// primaryOperator = '&' | '|'
 	void primaryOperator(vector<Symbol>);	
 	// primaryExpression = simpleExpression [relationalOperator simpleExpression]
@@ -117,7 +117,7 @@ class Parser
 	//helps to execute {addingOperator term}
 	void addopTerm(vector<Symbol>);
 	// term = factor {multiplyingOperator factor}
-	PL_Type term(vector<Symbol>,int);
+	void term(PL_Type&,vector<Symbol>,int,Symbol);
 	// multiplyingOperator = '*' | '/' | '\'
 	void multiplyingOperator(vector<Symbol>);
 	// factor = constant | variableAccess | '('expression')' | '~' factor	

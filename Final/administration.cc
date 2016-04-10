@@ -207,6 +207,11 @@ void Administration::emit3(string mneomonic,int varLabel,int startLabel)
 	outFile<<startLabel<<endl;
 
 }
+
+void Administration::fatal(string message)
+{
+	cerr<<message<<endl;
+}
 //Completion message
 void Administration::done()
 {

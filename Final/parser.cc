@@ -24,9 +24,16 @@ void Parser::program(Symbol sym)
 	stopSet.push_back(sym);
 	stopSet.push_back(DOT);
 	
+	int startLabel, varLabel; //local variables to store forward reference labels
+	startLabel = NewLabel(); // This is to record the address of the
+	                          // first instruction of program
+
+	varLabel = NewLabel(); // This is to record the the length of the variables defined here
+
+	admin.emit3("PROG", varLabel, startLabel);
 	//outFile<<"program()"<<endl;
 	//non terminal bloc	
-	block(stopSet);	
+	block(startLabel,varLabel,stopSet);
 	
 	//Building stop set using vector that may appear after dot symbol
 	vector<Symbol>().swap(stopSet);
@@ -36,18 +43,21 @@ void Parser::program(Symbol sym)
 	match(DOT,stopSet);
 	
 	//parsing done
-	admin.emit1("Done");
 	admin.done();
-		
+	admin.emit1("ENDPROG");
 }
 
 // block = 'begin' definitionPart statementPart 'end'
-void Parser::block(vector<Symbol> stops)
+void Parser::block(int sLabel, int vLabel,vector<Symbol> stops)
 {
 	//outFile<<"block()"<<endl;
 	
 	//new block in block table
-	bTable.newBlock();
+	if(!bTable.newBlock())
+	{
+		admin.fatal("Exceeded block limit");
+	}
+	int varLength = 0; // total variable storage requirement
 	//this portion matches begin and if not matched the shows corresponding error message and finds the next stop symbol
 	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);
 	
@@ -57,8 +67,25 @@ void Parser::block(vector<Symbol> stops)
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(END);
 		
-		definitionPart(ff.firstOfStatement() + stops + stopSet);
-		statementPart(stops + stopSet);
+		 // varLength is the value of “vLabel” and is determined in DefinitionPart
+		 definitionPart(varLength,ff.firstOfStatement() + stops + stopSet);
+		 // Define the labels used in PROC and PROG.
+	     // Output assembler instruction DEFARG to enter
+		 // labelTable[vLabel] = varLength in pass 1
+		 // so that varLength replaces varLabel in the final
+		 // code output in pass 2 of assembler
+
+		 admin.emit3("DEFARG", vLabel, varLength);
+
+		 // We are about to begin the first executable
+		 // instruction. So we can output assembler instruction
+		 // DEFADDR to enter
+		 // labelTable[startLabel] = address for next instruction
+		 // The assembler keeps track of the address of the instructions.
+
+		 admin.emit2("DEFADDR", sLabel);
+
+		 statementPart(stops + stopSet);
 		
 	}
 	//look ahead token is follow of definition
@@ -74,7 +101,7 @@ void Parser::block(vector<Symbol> stops)
 }
 
 // definitionPart = {definition';'}
-void Parser::definitionPart(vector<Symbol> stops)
+void Parser::definitionPart(int& varLength,vector<Symbol> stops)
 {
 	
 	//outFile<<"definitionPart()"<<endl;
@@ -83,32 +110,35 @@ void Parser::definitionPart(vector<Symbol> stops)
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(SEMICOLON);	
-		definition(ff.firstOfDefinition() + stopSet + stops);
+		definition(varLength,ff.firstOfDefinition() + stopSet + stops);
 		match(SEMICOLON , stops + ff.firstOfDefinition());
-		definitionPart(stops);
+		definitionPart(varLength,stops);
 	}
 	else
 		syntaxCheck(stops);
 	
-		
+	//return varLength;
 }
 
 // definition = constantDefinition | variableDefinition | procedureDefinition
-void Parser::definition(vector<Symbol> stops)
+void Parser::definition(int& varLength,vector<Symbol> stops)
 {
 	//outFile<<"definition()"<<endl;
 	
 	if(in(ff.firstOfConstDef()))
 	{
 		constantDefinition(stops);
+		//return 0+varLength;
 	}
 	else if(in(ff.firstOfVariDef()))
 	{
-		variableDefinition(stops);
+		//return
+		variableDefinition(varLength,stops);
 	}
 	else if(in(ff.firstOfProcDef()))
 	{
-		procedureDefinition(stops);
+		procedureDefinition(varLength,stops);
+		//return 0 + varLength;
 	}
 }
 
@@ -148,7 +178,7 @@ void Parser::constantDefinition(vector<Symbol> stops)
 }
 
 // variableDefinition = typeSymbol variableList | typeSymbol 'array' variableList'['constant']'
-void Parser::variableDefinition(vector<Symbol> stops)
+void Parser::variableDefinition(int& varLength,vector<Symbol> stops)
 {
 	//outFile<<"variableDefinition()"<<endl;	
 	
@@ -159,7 +189,8 @@ void Parser::variableDefinition(vector<Symbol> stops)
 	
 	if(in(ff.firstOfVariList()))
 	{
-		variableList(tempType, stops);
+		variableList(tempType,varLength,stops);
+		//return  varLength;
 	}
 	else if(lookAheadTok.getSymbol() == ARRAY)
 	{
@@ -170,8 +201,8 @@ void Parser::variableDefinition(vector<Symbol> stops)
 
 		match(ARRAY, stopSet + ff.firstOfVariList() + stops);
 		
-		
-		variableList(tempType, stopSet + stops);
+		int prevVarlength = varLength;
+		variableList(tempType,varLength,stopSet + stops);
 		
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(RIGHTBRACKET);
@@ -187,6 +218,8 @@ void Parser::variableDefinition(vector<Symbol> stops)
 		{
 			//set array size of the declared variable in block table
 			bTable.setArraySize(defPosition,tempValue);
+			varLength += (varLength - prevVarlength)*tempValue - (varLength - prevVarlength);
+			//return (bTable.def - defPosition -1)*arrayVars + varLength;
 		}
 		else
 		{
@@ -198,7 +231,7 @@ void Parser::variableDefinition(vector<Symbol> stops)
 }
 
 // procedureDefinition = 'proc' procedureName block
-void Parser::procedureDefinition(vector<Symbol> stops)
+void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 {
 	//outFile<<"procedureDefinition()"<<endl;
 
@@ -221,7 +254,15 @@ void Parser::procedureDefinition(vector<Symbol> stops)
 			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
 		}
 	}
-	block(stops);
+
+	int procLabel,startLabel, varLabel; //local variables to store forward reference labels
+	procLabel = NewLabel();
+	varLabel = NewLabel(); // This is to record the the length of the variables defined here
+	startLabel = NewLabel(); // This is to record the address of the
+			                          // first instruction of program
+	admin.emit2("DEFADDR",procLabel);
+	admin.emit3("PROC",varLabel,startLabel);
+	block(startLabel,varLabel,stops);
 
 
 }
@@ -247,7 +288,7 @@ PL_Type Parser::typeSymbol(vector<Symbol> stops)
 }
 
 // variableList = variableName {','variableName}
-void Parser::variableList(PL_Type tempType,vector<Symbol> stops)
+void Parser::variableList(PL_Type tempType,int& varListSize, vector<Symbol> stops)
 {
 	//outFile<<"variableList()"<<endl;
 	
@@ -263,6 +304,7 @@ void Parser::variableList(PL_Type tempType,vector<Symbol> stops)
 		if(id != -1)
 		{
 				bool isDefined = bTable.define(id, VAR, tempType, 1, -1);
+				varListSize++;
 				if(!isDefined)
 				{
 					//ambiguous name error
@@ -274,13 +316,14 @@ void Parser::variableList(PL_Type tempType,vector<Symbol> stops)
 	if(lookAheadTok.getSymbol() == COMMA)
 	{
 		match(COMMA, ff.firstOfVAList() + stops);
-		variableList(tempType, stops);
+		variableList(tempType,varListSize,stops);
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
 	}
 	
+
 }
 
 // statementPart = {statement';'}
@@ -379,6 +422,7 @@ void Parser::readStatement(vector<Symbol> stops)
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
 	variableAccessList(stops,typeList);
+	admin.emit2("READ",typeList.size());
 }
 
 // variableAccessList = variableAccess{','variableAccess}
@@ -417,6 +461,9 @@ void Parser::writeStatement(vector<Symbol> stops)
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
 	expressionList(stops,typeList);
+
+	admin.emit2("WRITE",typeList.size());
+
 }
 
 // expressionList = expression {','expression}
@@ -428,7 +475,7 @@ void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 	stopSet.push_back(COMMA);
 
 
-	PL_Type tempType = expression(stopSet + stops,0);
+	PL_Type tempType = expression(stopSet + stops,0,NONAME);
 	typeList.push_back(tempType);
 	
 	if(lookAheadTok.getSymbol() == COMMA)
@@ -471,6 +518,7 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 			if(varTypeList.at(i) !=  typeList.at(i))
 				admin.error(ScopeE,lookAheadTok.getSymbol(),9);
 	}
+	admin.emit2("ASSIGN",varTypeList.size());
 }
 
 // ifStatement = 'if' guardedCommandList 'fi' 
@@ -538,7 +586,7 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	stopSet.push_back(RIGHTP);
 	//This flag is used to resolve some issues that arises conflicts between stop sets 
 	agc = true;
-	PL_Type tempType = expression(stopSet + ff.firstOfStatement() + stops,0);
+	PL_Type tempType = expression(stopSet + ff.firstOfStatement() + stops,0,NONAME);
 	agc = false;
 	
 	match(GC2, ff.firstOfStatement() + stops);
@@ -546,11 +594,17 @@ void Parser::guardedCommand(vector<Symbol> stops)
 }
 
 // expression = primaryExpression{primaryOperator primaryExpression}	
-PL_Type Parser::expression(vector<Symbol> stops,int flag)
+PL_Type Parser::expression(vector<Symbol> stops,int flag,Symbol sym)
 {
 	//outFile<<"expression()"<<endl;	
 	
 	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
+
+	if(sym == AND)
+		admin.emit1("LESS");
+	else if(sym == OR)
+		admin.emit1("EQUAL");
+
 	//flag = 1 means this functions is called recursively and the type is boolean
 	//as primary operator is present
 	if(flag == 1)
@@ -567,10 +621,10 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),7);
 		}
-
+		Symbol symb = lookAheadTok.getSymbol();
 		primaryOperator(ff.firstOfExpList() + stops);
-		expression(stops,1);
-		return tempType;
+		expression(stops,1,symb);
+		//return tempType;
 	}
 	else if(agc)
 	{
@@ -615,8 +669,16 @@ PL_Type Parser::primaryExpression(vector<Symbol> stops)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
 		}
-		relationalOperator(stops);
+		Symbol symb = lookAheadTok.getSymbol();
+		relationalOperator(ff.firstOfRelOp() + stops);
 		tempType = simpleExpression(stops);
+
+		if(symb == LESST)
+			admin.emit1("LESS");
+		else if(symb == EQUAL)
+			admin.emit1("EQUAL");
+		else
+			admin.emit1("GREATER");
 
 		//relational operator is present so simple expression is expected
 		//to be integral
@@ -665,13 +727,18 @@ void Parser::relationalOperator(vector<Symbol> stops)
 PL_Type Parser::simpleExpression(vector<Symbol> stops)
 {
 	//outFile<<"simpleExpression()"<<endl;
-	
+	Symbol sym = NONAME;
 	if(lookAheadTok.getSymbol() == MINUS)
 	{
-		match(MINUS, ff.firstOfTerm() + stops);	
+		match(MINUS, ff.firstOfTerm() + stops);
+		sym = MINUS;
 	}
 
-	PL_Type tempType = term(ff.firstOfAddOp() + stops,0);
+	PL_Type tempType;
+	term(tempType,ff.firstOfAddOp() + stops,0,NONAME);
+
+	if(sym == MINUS)
+		admin.emit1("SUBSTRACT");
 		
 	if(in(ff.firstOfAddOp()))
 	{
@@ -679,7 +746,7 @@ PL_Type Parser::simpleExpression(vector<Symbol> stops)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
 		}
-		addopTerm(stops);
+		addopTerm(ff.firstOfAddOp() + stops);
 		return tempType;
 	}
 	else if(agc)
@@ -714,8 +781,16 @@ void Parser::addopTerm(vector<Symbol> stops)
 {
 	if(in(ff.firstOfAddOp()))
 	{
+		Symbol symb = lookAheadTok.getSymbol();
 		addingOperator(stops);
-		PL_Type tempType = term(stops,0);
+		PL_Type tempType ;
+		term(tempType,stops,0,NONAME);
+
+		if(symb == PLUS)
+			admin.emit1("ADD");
+		else if(symb == MINUS)
+			admin.emit1("subtract");
+
 		if(tempType != INTEGRAL)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
@@ -725,11 +800,21 @@ void Parser::addopTerm(vector<Symbol> stops)
 }
 
 // term = factor {multiplyingOperator factor}
-PL_Type Parser::term(vector<Symbol> stops,int flag)
+void Parser::term(PL_Type& tempType,vector<Symbol> stops,int flag, Symbol sym)
 {
 	//outFile<<"term()"<<endl;
-	
-	PL_Type tempType = factor(ff.firstOfMultOp() + stops);
+
+
+	tempType = factor(ff.firstOfMultOp() + stops);
+
+	if(sym == TIMES)
+		admin.emit1("MULTIPLY");
+	else if(sym == DIV)
+		admin.emit1("DIVIDE");
+	else if(sym == MOD)
+		admin.emit1("MODULO");
+
+
 	//flag = 1 means Multiplying operator is parsed so the
 	//type of factor is expected to be integral
 	if(flag == 1)
@@ -747,36 +832,39 @@ PL_Type Parser::term(vector<Symbol> stops,int flag)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),6);
 		}
+		Symbol symb = lookAheadTok.getSymbol();
 		multiplyingOperator(stops);
 
-		PL_Type tempType = term(stops,1);
+
+		term(tempType,stops,1,symb);
+
 
 	}	
 	else if(in(ff.followOfExpression()))
 	{
 		syntaxCheck(stops);
-		return tempType;
+		//return tempType;
 	}
 	else if(agc)
 	{
 		syntaxCheck(stops);
-		return tempType;
+		//return tempType;
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
-		return tempType;
+		//return tempType;
 	}
 }
 
 // multiplyingOperator = '*' | '/' | '\'
-void Parser::multiplyingOperator(vector<Symbol> stops)
+ void Parser::multiplyingOperator(vector<Symbol> stops)
 {
 	//outFile<<"multiplyingOperator()"<<endl;
 
 	if(lookAheadTok.getSymbol() == TIMES)
 	{
-		match(TIMES,stops);		
+		match(TIMES,stops);
 	}	
 	else if(lookAheadTok.getSymbol() == DIV)
 	{
@@ -803,11 +891,13 @@ PL_Type Parser::factor(vector<Symbol> stops)
 			int tempValue;
 			PL_Type tempType;
 			constant(tempValue, tempType, stops);
+			admin.emit2("CONSTANT",tempValue);
 			return tempType;
 		}
 		else
 		{
 			PL_Type tempType = variableAccess(stops);
+			admin.emit1("VALUE");
 			return tempType;
 		}
 
@@ -819,6 +909,7 @@ PL_Type Parser::factor(vector<Symbol> stops)
 		int tempValue;
 		PL_Type tempType;
 		constant(tempValue, tempType, stops);
+		admin.emit2("CONSTANT",tempValue);
 		return tempType;
 	}
 	else if(lookAheadTok.getSymbol() == LEFTP)
@@ -827,8 +918,10 @@ PL_Type Parser::factor(vector<Symbol> stops)
 		stopSet.push_back(RIGHTP);
 	
 		match(LEFTP, ff.firstOfExpList() + stopSet + stops);
-		PL_Type tempType = expression(stopSet + stops,0);
+		PL_Type tempType = expression(stopSet + stops,0,NONAME);
 		match(RIGHTP,stops);
+
+		admin.emit1("INDEX");
 
 		return tempType;
 	}
@@ -836,6 +929,7 @@ PL_Type Parser::factor(vector<Symbol> stops)
 	{
 		match(NOT, ff.firstOfFactor() + stops);
 		factor(stops);	
+		admin.emit1("NOT");
 	}
 	else if(in(ff.followOfExpression()))
 	{
@@ -865,6 +959,10 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 		{
 			admin.error(ScopeE,lookAheadTok.getSymbol(),1);
 		}
+		else
+		{
+			admin.emit3("VARIABLE",entry.rbl,entry.disp);
+		}
 
 		if(in(ff.firstOfIndexSel()))
 		{
@@ -876,7 +974,7 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 			stopSet.push_back(RIGHTBRACKET);
 
 			match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
-			PL_Type tempType = expression(stopSet + stops,0);
+			PL_Type tempType = expression(stopSet + stops,0,NONAME);
 			match(RIGHTBRACKET,stops);
 
 			return tempType;

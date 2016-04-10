@@ -90,7 +90,23 @@ int size; // size of name
 int value; // numerical value
 }TableEntry;
 \end{lstlisting}
-\pagebreak
+
+For setting type and kind we declared a header file type.h inside which we declared 2 Enum types PL\_Type and PL\_Kind. They are given bellow: \\
+\begin{lstlisting}
+//Name type
+enum PL_Type
+{
+INTEGRAL=310, BOOLEAN, UNIVERSAL
+};
+
+//Name Kind
+enum PL_Kind
+{
+CONSTANT=305, VAR, ARR, PROCEDURE, UNDEFINED
+};
+\end{lstlisting}
+
+
 {\bf TableEntry find(int, bool\&):} Using this method we search the entire table for an id in inside out fashion. Variable error is false if the id we are looking for is in
 the block table. error is true if not found in the Block table.\\
 

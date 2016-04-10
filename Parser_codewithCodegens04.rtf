@@ -1,0 +1,317 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww17820\viewh17320\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx10937\pardirnatural
+
+\f0\fs22 \cf0 Code Generation Rules:\
+\
+Idea: \
+\
+For each syntax rule of PL, corresponding code rule  \
+determines the PL abstract machine code. The code rules are simple postfix form of the \
+syntax rules. \
+\
+When parser enters a new block (program or a procedure) it will process the list of local variables. \
+For code generation purposes, with each variable, we must now store its (relative) block level i.e., \
+(relative) lexical level of the procedure, and its displacement from the base address of the procedure's activation \
+record so that any reference to these variable will be able to correctly locate them on the runtime stack.\
+This information is available after the parser is through with processing of definition part in the \
+procedure. The idea is to count the length (number of ints) of the variables. Then with the knowledge \
+of the fixed part of the activation record (static+dynamic links and return address) we can enter\
+displacement for each variable into their object record.\
+\
+Here are some specific cases. \
+\
+When parsing a procedure or program\
+\
+For each procedure or the program we need to know \
+ 1. Length of variables. This information is known after we have parsed the \
+    variable definition \
+    -- we use a temporary label called \'93varLabel\'94 whose value becomes available \
+       only after we have processed the definition part.\
+ 2. The address of the first instruction of the procedure or the program\
+    -- we use a temporary label called \'93startLabel\'94 whose value becomes available \
+       only after we have processed the definition part\
+\
+The values associated with these two labels are examples of forward reference. \
+The assembler instruction  DEFARG and DEFADDR, respectively, fills out the \
+values of  \'93varLabel\'94  and \'93startLabel\'94 as they become available during pass I of the assembler. \
+\
+ 3. Expression and statement codes are generated according to the code rules.\
+\
+NB: PLEASE NOTE THAT C++ CODE UNRELATED TO CODE GENERATION PHASE ARE OMITTED \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tqr\tx9582\pardirnatural
+\cf0 (indicated by \'85) IN THE FOLLOWING. \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx10937\pardirnatural
+\cf0 \
+\
+In the following \
+NewLabel() is a function in parser class to generate integer labels. Each time the function is called \
+           it returns the next integer label to the caller.\
+emit       is a function in admin class. It takes three parameters: opcode, and two integers and emits the \
+           text code into the assembly code file.  \
+\
+Example:\
+\
+// Note about code generation in IF and DO commands:  There is a single wasted\
+// label within each of these commands.  This is because a label is defined\
+// each time we enter the GuardedCommand statement.  Therefore, the first such\
+// command has a label defined for it, even though no jump will be made to that\
+// label.  \
+  \
+// Program -> Block "."\
+// Modified with code generation\
+void Parser::Program(StopSet s)\
+\{\
+   \
+   // We must indicate a new block.  If it fails, then we have exceeded\
+   // the block limit defined in blocktable.h.\
+\
+\
+   if (!(blocktable.newBlock()))\
+      admin->fatal("Exceeded block limit");\
+\
+  // NewLabel() returns the next integer representing a label for resolving forward reference\
+ \
+   int startLabel, varLabel; //local variables to store forward reference labels\
+   startLabel = NewLabel(); // This is to record the address of the \
+                             // first instruction of program\
+\
+   varLabel = NewLabel(); // This is to record the the length of the variables defined here\
+\
+// Output the instruction PROG which sets up the \
+// activation record for program and executes the \
+// first instruction at \'93startLabel\'94 (to be computed by assembler)\
+\
+   admin->emit3("PROG", varLabel, startLabel);\
+\
+// We must pass these labels as parameters to BLOCK() where the labels are given their values.\
+\
+   Block(startLabel, varLabel, \'85);\
+\
+\
+// We are done! output PL instruction ENDPROG\
+\
+   admin->emit1("ENDPROG");\
+  \
+\}\
+\
+// Block -> "begin" DefinitionPart StatementPart "end"\
+// modified with code generation.\
+\
+// sLabel for \'93startLabel\'94, vlabel for \'93varLabel\'94\
+\
+void Parser::Block(int sLabel, int vLabel, StopSet S)\
+\{\
+   \
+   int varLength = 0; // total variable storage requirement\
+   varLength = DefinitionPart(\'85); // varLength is the value of \'93vLable\'94 and is determined in DefinitionPart \
+\
+   // Define the labels used in PROC and PROG.\
+   // Output assembler instruction DEFARG to enter \
+   // labelTable[vLabel] = varLength in pass 1\
+   // so that varLength replaces varLabel in the final\
+   // code output in pass 2 of assembler\
+\
+   admin->emit3("DEFARG", vLabel, varLength);\
+\
+   // We are about to begin the first executable\
+   // instruction. So we can output assembler instruction \
+   // DEFADDR to enter \
+   // labelTable[startLabel] = address for next instruction\
+   // The assembler keeps track of the address of the instructions.\
+\
+   admin->emit2("DEFADDR", sLabel);\
+   StatementPart(\'85);\
+   expect(END, \'85);\
+\}\
+\
+3. Parsing of definition enters useful information about variables and procedures in \
+   their respective object record. Note the return type of int!!\
+\
+   // DefinitionPart -> \{ Definition ";" \}\
+   int Parser::DefinitionPart(\'85)\
+   \{\
+      // total storage needed for variables declared in this block\
+      int varlength = 0;\
+\
+// variable start is offset for dynamic link, static link and return address\
+      int nextvarstart = 3;\
+      while (\'85) \{\
+         varlength += Definition(nextvarstart, \'85);\
+      expect(SEMICOLON, \'85);\
+      \}\
+      return varlength; // the amount of storage for variable objects\
+    \}\
+\
+\
+  // Definition -> ConstantDefinition | VariableDefinition | ProcedureDefinition\
+  int Parser::Definition(int &varStart, \'85)\
+  \{\
+    if (\'85) \{\
+      ConstantDefinition(\'85);\
+      return 0;\
+   \}\
+   else if (\'85)\
+      return VariableDefinition(\'85);\
+   else if (\'85) \{\
+      ProcedureDefinition(\'85);\
+      return 0;\
+   \}\
+   else\
+      syntaxError(\'85);\
+   return 0;\
+\}\
+\
+// VariableDefinition2 -> VariableList | "array" VariableList "[" Constant "]"\
+  int Parser::VariableDefinition2(\'85, int &varStart,\
+				\'85)\
+ \{\
+   \
+   // Here we check if we have an array or a scalar variable.\
+   if (\'85) \{\
+      // get the list of ID's returned by VariableList.\
+      vector<int> varlist = VariableList(\'85);\
+      for (int i = 0; i < varlist.size(); i++) \{\
+	 // define each one of them in the block table with displacement.\
+	 if (!blocktable.define(varlist[i], VAR, thistype, 1, 0, varStart, 0))\
+	    admin->scopeError("Ambiguous definition of variable");\
+	 varStart++;\
+      \}\
+      return varlist.size();\
+   \}\
+   else \{\
+      // Here we have an array.\
+      expect(ARRAY, \'85);\
+      vector<int> varlist = VariableList(\'85);\
+      expect(OPENSQUARE, \'85);\
+      int arraysize;\
+      myType indextype;\
+\
+      // We must have a constant that indicates the size of the array.\
+      Constant(arraysize, indextype, \'85);\
+      expect(CLOSESQUARE, \'85);\
+\
+      // The size of the array must be an integer (do not allow bool index type)  \
+      // Variable sizes of arrays are not allowed.\
+\
+      for (int i = 0; i < varlist.size(); i++) \{\
+	 // Again, define each ID as an array of the appropriate type and size.\
+	 if (!blocktable.define(varlist[i], ARR, thistype, arraysize, 0,\
+				varStart, 0))\
+	    admin->scopeError("Ambiguous definition of array");\
+	 varStart += arraysize;\
+      \}\
+      return varlist.size() * arraysize;\
+   \}\
+\}\
+\
+// ProcedureDefinition -> "proc" ProcedureName Block\
+void Parser::ProcedureDefinition(StopSet S)\
+\{\
+   // Define a label for proc instruction: \
+   //   PROC \
+   //   varLabel \
+   //   startLavel\
+   //\
+   // Note that PROG instruction does not need this label as we never \
+   // call the main program!! However we call procedures directly or \
+   // recursively. Therefore we need to know the address of the PROC instruction.\
+   \
+   int procLabel = NewLabel();\
+   int varLabel = NewLabel(); // length of the variables in this procedure\
+   int startLabel = NewLabel(); // the first executable instruction of this procedure\
+   admin->emit2("DEFADDR", procLabel);\
+   admin->emit3("PROC", varLabel, startLabel);\
+   Block(startLabel, varLabel, \'85);\
+   admin->emit1("ENDPROC");\
+   // end the block\
+   blocktable.endBlock();\
+\}\
+\
+// ProcedureStatement -> "call" ProcedureName\
+void Parser::ProcedureStatement(StopSet S)\
+\{\
+   expect(CALL, \'85);\
+   if ( \'85 ) \{\
+      bool isError = false;\
+      // find the ID in the table.  If it is not there, find will put it there.\
+      TableEntry tempentry = blocktable.find( \'85, isError);\
+      if (isError)\
+	 // A result of true means that it was undefined and find had to\
+	 // define it.\
+	 admin->scopeError("Undefined procedure name");\
+      // Check if it is a procedure ID or not.\
+      if (tempentry.kind != PROCEDURE && tempentry.kind != UNDEFINED)\
+	 admin->typeError("Not a procedure name");\
+\
+      // NB!!\
+      //\
+      // Here we can emit procedure call instruction with relative lexical level \
+      //                                                  ^^^^^^^^^^^^^^^^^^^^^^\
+      // of the called procedure relative to the current (caller) procedure\
+  \
+      admin->emit3("CALL", blocktable.currentLevel() - tempentry.level,\
+		   tempentry.startLabel);\
+   \}\
+   expect(ID, \'85);\
+\}\
+\
+// IfStatement -> "if" GuardedCommandList "fi"\
+void Parser::IfStatement(\'85)\
+\{\
+    expect(IF, \'85);\
+   int startLabel = NewLabel(); // label of the instructions if the the boolean expression \
+                                // evaluates to false\
+   int doneLabel = NewLabel();  // label of the instruction immediately after code for if instruction\
+   GuardedCommandList(startLabel, doneLabel, \'85);\
+   // Define the final jump address.\
+   admin->emit2("DEFADDR", startLabel);  // we have a runtime error; address of the FI instruction is known\
+   // Add the FI command.\
+   admin->emit2("FI", admin->currentLine());\
+   // Define the address to jump to on successful completion of the command.\
+   admin->emit2("DEFADDR", doneLabel); //The if-instruction is a success, doneLabel is the address of the next instruction.\
+   expect(FI, stop);\
+\}\
+\
+// DoStatement -> "do" GuardedCommandList "od"\
+void Parser::DoStatement(StopSet stop)\
+\{\
+   expect(DO, \'85);\
+   int startLabel = NewLabel();\
+   int loopLabel = NewLabel();\
+   // Emit the label to loop back to.\
+   admin->emit2("DEFADDR", loopLabel);\
+   GuardedCommandList(startLabel, loopLabel, \'85);\
+   // Emit the label that exits from the loop.\
+   admin->emit2("DEFADDR", startLabel);\
+   expect(OD, stop);\
+\}\
+\
+// GuardedCommandList -> GuardedCommand \{ "[]" GuardedCommand \}\
+void Parser::GuardedCommandList(int &startLabel, int GoTo, \'85)\
+\{\
+   GuardedCommand(startLabel, GoTo, \'85);\
+   while (\'85) \{\
+      \'85\
+      GuardedCommand(startLabel, GoTo,);\
+   \}\
+\}\
+\
+// GuardedCommand -> Expression "->" StatementPart\
+void Parser::GuardedCommand(int &thisLabel, int GoTo, \'85)\
+\{\
+   admin->emit2("DEFADDR", thisLabel);\
+   myType type1 = Expression(\'85);\
+   // make sure that the expression evaluated to a boolean type.\
+   if (type1 != BOOL && type1 != UNIVERSAL)\
+      admin->typeError("Expression does not evaluate to boolean");\
+   thisLabel = NewLabel();\
+   admin->emit2("ARROW", thisLabel);\
+   expect(ARROW, \'85);\
+   StatementPart(\'85);\
+   admin->emit2("BAR", GoTo);\
+\}\
+\
+}

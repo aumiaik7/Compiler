@@ -62,6 +62,7 @@ class Administration
 	void emit1(string);
 	void emit2(string,int);
 	void emit3(string,int, int);
+	void fatal(string);
 
 		
 };
