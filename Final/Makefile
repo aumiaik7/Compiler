@@ -4,8 +4,8 @@ CFLAGS=-c
 
 all: scanner
 
-scanner: plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o
-	$(CC) plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o -o compiler
+scanner: plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o Assembler.o interp.o
+	$(CC) plc.o administration.o scanner.o parser.o firstfollow.o symboltable.o token.o blocktable.o Assembler.o interp.o -o compiler
 
 plc.o: plc.cc
 	$(CC) $(CFLAGS) plc.cc -g
@@ -30,6 +30,10 @@ token.o: token.cc
 
 blockTable.o: blocktable.cc
 	$(CC) $(CFLAGS) blocktable.cc -g
+Assembler.o: Assembler.cc
+	$(CC) $(CFLAGS) Assembler.cc -g
+interp.o : interp.cc
+	$(CC) $(CFLAGS) interp.cc -g
 
 clean:
 	rm -rf *.o *~ compiler

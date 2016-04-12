@@ -1,4 +1,6 @@
 #include "administration.h"
+#include "Assembler.h"
+#include "interp.h"
 
 
 const string Administration::terminals[TERMINALS] = { "id","num","bad num","bad name", "bad symbol", "badchar", "newline", "no name", "end of file", ".", ",", ";", "[", "]", "&", "|", "~", "<", "=", ">", "<=", ">=", "+", "-", "*", "/", "\\", ")", "(", ":=", "[]", "->", "begin", "end", "const", "array", "integer", "Boolean", "proc", "skip", "read", "write", "call", "if", "do", "fi", "od", "false", "true"};
@@ -218,5 +220,19 @@ void Administration::done()
 	cout<<endl<<"<<<Type, Scope checking and Parsing Done>>>"<<endl;
 	cout<<"The methods called for nonterminals are showed in ParserOutFile "<<endl;
 	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
+	outFile.close();
+
+	//source file object
+	ifstream inFile;
+	//output file object
+	ofstream otFile;
+	inFile.open("Code");
+	otFile.open("FinalOP");
+	Assembler assembler(inFile,otFile);
+	assembler.firstPass();
+	assembler.secondPass();
+
+	Interpreter interpreter("FinalOP",false);
+
 }
 

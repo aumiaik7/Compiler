@@ -42,9 +42,10 @@ void Parser::program(Symbol sym)
 	//this portion matches dot and if not matched the shows corresponding error message and finds the next stop symbol
 	match(DOT,stopSet);
 	
+	admin.emit1("ENDPROG");
 	//parsing done
 	admin.done();
-	admin.emit1("ENDPROG");
+
 }
 
 // block = 'begin' definitionPart statementPart 'end'
@@ -253,6 +254,7 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 			//ambiguous name error
 			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
 		}
+
 	}
 
 	int procLabel,startLabel, varLabel; //local variables to store forward reference labels
@@ -260,10 +262,11 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 	varLabel = NewLabel(); // This is to record the the length of the variables defined here
 	startLabel = NewLabel(); // This is to record the address of the
 			                          // first instruction of program
+	bTable.setStartLabel(startLabel);
 	admin.emit2("DEFADDR",procLabel);
 	admin.emit3("PROC",varLabel,startLabel);
 	block(startLabel,varLabel,stops);
-
+	admin.emit1("ENDPROC");
 
 }
 
@@ -395,6 +398,8 @@ void Parser::statement(vector<Symbol> stops)
 			{
 				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
 			}
+			//entry.disp is start label for procedure name
+			admin.emit3("CALL", entry.rbl, entry.disp);
 		}
 				
 	}
@@ -526,11 +531,19 @@ void Parser::ifStatement(vector<Symbol> stops)
 {
 	//outFile<<"ifStatement()"<<endl;
 
+	int startLabel = NewLabel();// label of the instructions if the the boolean expression
+    							// evaluates to false
+	int doneLabel = NewLabel();  // label of the instruction immediately after code for if instruction
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(FI);
 	
 	match(IF, ff.firstOfGCList() + stops);
-	guardedCommandList(stopSet + stops);
+	guardedCommandList(startLabel,doneLabel,stopSet + stops);
+	admin.emit2("DEFADDR", startLabel);  // If we have a runtime error; address of the FI instruction is known
+	// Add the FI command.
+	admin.emit2("FI", admin.lineNo);
+	 // Define the address to jump to on successful completion of the command.
+	admin.emit2("DEFADDR", doneLabel); //The if-instruction is a success, doneLabel is the address of the next instruction.
 	match(FI,stops);	
 }
 
@@ -543,13 +556,18 @@ void Parser::doStatement(vector<Symbol> stops)
 
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(OD);
-	
-	guardedCommandList(stopSet + stops);
+	int startLabel = NewLabel();
+	int loopLabel = NewLabel();
+	// Emit the label to loop back to.
+	admin.emit2("DEFADDR", loopLabel);
+	guardedCommandList(startLabel,loopLabel,stopSet + stops);
+	// Emit the label that exits from the loop.
+	admin.emit2("DEFADDR", startLabel);
 	match(OD,stops);
 }
 
 // guardedCommandList = guardedCommand{'[]'guardedCommand}
-void Parser::guardedCommandList(vector<Symbol> stops)
+void Parser::guardedCommandList(int& startLabel, int goTo,vector<Symbol> stops)
 {
 	//outFile<<"guardedCommandList()"<<endl;
 
@@ -558,12 +576,12 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 	stopSet.push_back(FI);
 	stopSet.push_back(OD);
 	
-	guardedCommand(stopSet + stops);
+	guardedCommand(startLabel,goTo,stopSet + stops);
 	
 	if(lookAheadTok.getSymbol() == GC1)
 	{
 		match(GC1, ff.firstOfGCList() + stops);
-		guardedCommandList(stops);
+		guardedCommandList(startLabel,goTo,stops);
 	}
 	else if(in(ff.firstOfStatement()))
 	{
@@ -576,10 +594,10 @@ void Parser::guardedCommandList(vector<Symbol> stops)
 }
 
 // guardedCommand = expression '->' statementPart
-void Parser::guardedCommand(vector<Symbol> stops)
+void Parser::guardedCommand(int& thisLabel, int goTo,vector<Symbol> stops)
 {
 	//outFile<<"guardedCommand()"<<endl;
-	
+	admin.emit2("DEFADDR", thisLabel);
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(GC2);	
 	stopSet.push_back(RIGHTBRACKET);
@@ -588,9 +606,11 @@ void Parser::guardedCommand(vector<Symbol> stops)
 	agc = true;
 	PL_Type tempType = expression(stopSet + ff.firstOfStatement() + stops,0,NONAME);
 	agc = false;
-	
+	thisLabel = NewLabel();
+	admin.emit2("ARROW", thisLabel);
 	match(GC2, ff.firstOfStatement() + stops);
 	statementPart(stops);
+	admin.emit2("BAR", goTo);
 }
 
 // expression = primaryExpression{primaryOperator primaryExpression}	
@@ -601,9 +621,9 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag,Symbol sym)
 	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
 
 	if(sym == AND)
-		admin.emit1("LESS");
+		admin.emit1("AND");
 	else if(sym == OR)
-		admin.emit1("EQUAL");
+		admin.emit1("OR");
 
 	//flag = 1 means this functions is called recursively and the type is boolean
 	//as primary operator is present
@@ -789,7 +809,7 @@ void Parser::addopTerm(vector<Symbol> stops)
 		if(symb == PLUS)
 			admin.emit1("ADD");
 		else if(symb == MINUS)
-			admin.emit1("subtract");
+			admin.emit1("SUBSTRACT");
 
 		if(tempType != INTEGRAL)
 		{
@@ -921,7 +941,7 @@ PL_Type Parser::factor(vector<Symbol> stops)
 		PL_Type tempType = expression(stopSet + stops,0,NONAME);
 		match(RIGHTP,stops);
 
-		admin.emit1("INDEX");
+		//admin.emit1("INDEX");
 
 		return tempType;
 	}
@@ -976,7 +996,8 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 			match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
 			PL_Type tempType = expression(stopSet + stops,0,NONAME);
 			match(RIGHTBRACKET,stops);
-
+			// INDEX instruction emits the line number should the index be out-of-range
+			admin.emit3("INDEX", entry.size, admin.lineNo);
 			return tempType;
 		}
 		else if(agc)
@@ -1006,13 +1027,13 @@ void Parser::constant(int& tempValue, PL_Type& tempType, vector<Symbol> stops)
 	}	
 	else if(lookAheadTok.getSymbol() == TRUE)
 	{
-		tempValue = 0;
+		tempValue = 1;
 		tempType = BOOLEAN;
 		match(TRUE,stops);
 	}
 	else if(lookAheadTok.getSymbol() == FALSE)
 	{
-		tempValue = 1;
+		tempValue = 0;
 		tempType = BOOLEAN;
 		match(FALSE,stops);
 	}

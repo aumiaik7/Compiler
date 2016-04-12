@@ -60,6 +60,8 @@ class BlockTable
 	void setArraySize(int,int);
 	//index for name definitions
 	int def;
+	//set start label
+	void setStartLabel(int);
 		
 };
 

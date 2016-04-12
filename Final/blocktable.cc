@@ -86,6 +86,11 @@ bool BlockTable::newBlock()
 	}
 	return true;
 }
+
+void BlockTable::setStartLabel(int sl)
+{
+	myBlock[blockLevel][def-1].disp = sl;
+}
 //setSize for Arrays
 void BlockTable::setArraySize(int defPosition, int size)
 {

@@ -99,9 +99,9 @@ class Parser
 	// doStatement = 'do' guardedCommandList 'od'
 	void doStatement(vector<Symbol>);
 	// guardedCommandList = guardedCommand{'[]'guardedCommand}
-	void guardedCommandList(vector<Symbol>);
+	void guardedCommandList(int&,int,vector<Symbol>);
 	// guardedCommand = expression '->' statementPart
-	void guardedCommand(vector<Symbol>);
+	void guardedCommand(int&,int,vector<Symbol>);
 	// expression = primaryExpression{primaryOperator primaryExpression}	
 	PL_Type expression(vector<Symbol>,int,Symbol);
 	// primaryOperator = '&' | '|'
