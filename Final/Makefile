@@ -28,8 +28,9 @@ symboltable.o: symboltable.cc
 token.o: token.cc
 	$(CC) $(CFLAGS) token.cc -g
 
-blockTable.o: blocktable.cc
+blocktable.o: blocktable.cc
 	$(CC) $(CFLAGS) blocktable.cc -g
+	
 Assembler.o: Assembler.cc
 	$(CC) $(CFLAGS) Assembler.cc -g
 interp.o : interp.cc

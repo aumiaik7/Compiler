@@ -15,7 +15,7 @@ begin
 		       call fib; 
 		       z := temp; 
 		       temp := y + z; 
-	       []  ~(temp > 2) -> skip; 
+	       []  ~(temp > 0) -> skip; 
 	       fi; 
 	end; 
 read temp; 

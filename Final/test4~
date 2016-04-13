@@ -15,7 +15,7 @@ $Input Table:
    i,j := 1,1;
    do ~(i>n)->read A[i];i:=i+1;od;
    if i = 11 -> write i;[]
-       ~(i = 11) ->  write 3;
+       ~(i = 11) ->  write 0;
    fi; 
 $  call p; 
 end.

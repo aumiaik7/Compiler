@@ -63,7 +63,7 @@ class Parser
 	// program = block '.'
 	void program(Symbol);
 	// block = 'begin' definitionPart statementPart 'end'
-	void block(int,int,vector<Symbol>);
+	void block(int,int,int,vector<Symbol>);
 	// definitionPart = {definition';'}
 	void definitionPart(int&,vector<Symbol>);
 	// definition = constantDefinition | variableDefinition | procedureDefinition

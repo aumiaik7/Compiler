@@ -222,17 +222,20 @@ void Administration::done()
 	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
 	outFile.close();
 
-	//source file object
-	ifstream inFile;
-	//output file object
-	ofstream otFile;
-	inFile.open("Code");
-	otFile.open("FinalOP");
-	Assembler assembler(inFile,otFile);
-	assembler.firstPass();
-	assembler.secondPass();
+	if(errorCount == 0)
+	{
+		//source file object
+		ifstream inFile;
+		//output file object
+		ofstream otFile;
+		inFile.open("Code");
+		otFile.open("FinalOP");
+		Assembler assembler(inFile,otFile);
+		assembler.firstPass();
+		assembler.secondPass();
 
-	Interpreter interpreter("FinalOP",false);
+		Interpreter interpreter("FinalOP",false);
+	}
 
 }
 

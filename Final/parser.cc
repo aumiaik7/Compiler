@@ -33,7 +33,7 @@ void Parser::program(Symbol sym)
 	admin.emit3("PROG", varLabel, startLabel);
 	//outFile<<"program()"<<endl;
 	//non terminal bloc	
-	block(startLabel,varLabel,stopSet);
+	block(startLabel,varLabel,0,stopSet);
 	
 	//Building stop set using vector that may appear after dot symbol
 	vector<Symbol>().swap(stopSet);
@@ -49,7 +49,7 @@ void Parser::program(Symbol sym)
 }
 
 // block = 'begin' definitionPart statementPart 'end'
-void Parser::block(int sLabel, int vLabel,vector<Symbol> stops)
+void Parser::block(int sLabel, int vLabel,int varLength, vector<Symbol> stops)
 {
 	//outFile<<"block()"<<endl;
 	
@@ -58,7 +58,7 @@ void Parser::block(int sLabel, int vLabel,vector<Symbol> stops)
 	{
 		admin.fatal("Exceeded block limit");
 	}
-	int varLength = 0; // total variable storage requirement
+	//int varLength = 0; // total variable storage requirement
 	//this portion matches begin and if not matched the shows corresponding error message and finds the next stop symbol
 	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);
 	
@@ -70,8 +70,10 @@ void Parser::block(int sLabel, int vLabel,vector<Symbol> stops)
 		
 		 // varLength is the value of “vLabel” and is determined in DefinitionPart
 		 definitionPart(varLength,ff.firstOfStatement() + stops + stopSet);
+
+
 		 // Define the labels used in PROC and PROG.
-	     // Output assembler instruction DEFARG to enter
+		 // Output assembler instruction DEFARG to enter
 		 // labelTable[vLabel] = varLength in pass 1
 		 // so that varLength replaces varLabel in the final
 		 // code output in pass 2 of assembler
@@ -85,16 +87,32 @@ void Parser::block(int sLabel, int vLabel,vector<Symbol> stops)
 		 // The assembler keeps track of the address of the instructions.
 
 		 admin.emit2("DEFADDR", sLabel);
-
 		 statementPart(stops + stopSet);
-		
+
 	}
+
 	//look ahead token is follow of definition
 	else if(in(ff.followOfDefPart()))
 	{
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(END);
-		statementPart(stops + stopSet);
+
+		// Define the labels used in PROC and PROG.
+		 // Output assembler instruction DEFARG to enter
+		 // labelTable[vLabel] = varLength in pass 1
+		 // so that varLength replaces varLabel in the final
+		 // code output in pass 2 of assembler
+
+		 admin.emit3("DEFARG", vLabel, varLength);
+
+		 // We are about to begin the first executable
+		 // instruction. So we can output assembler instruction
+		 // DEFADDR to enter
+		 // labelTable[startLabel] = address for next instruction
+		 // The assembler keeps track of the address of the instructions.
+		 admin.emit2("DEFADDR", sLabel);
+
+		 statementPart(stops + stopSet);
 	}
 	
 	//this portion matches end and if not matched the shows corresponding error message and finds the next stop symbol
@@ -167,7 +185,7 @@ void Parser::constantDefinition(vector<Symbol> stops)
 	if(id != -1)
 	{
 		//define the name in block table
-		bool isDefined = bTable.define(id,CONSTANT,tempType,1,tempValue);
+		bool isDefined = bTable.define(id,CONSTANT,tempType,0,tempValue,0);
 		if(!isDefined)
 		{
 			//ambiguous name error
@@ -248,7 +266,7 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 	
 		if(id != -1)
 	{
-		bool isDefined = bTable.define(id,PROCEDURE,INTEGRAL,1,1);
+		bool isDefined = bTable.define(id,PROCEDURE,INTEGRAL,0,1,0);
 		if(!isDefined)
 		{
 			//ambiguous name error
@@ -262,12 +280,12 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 	varLabel = NewLabel(); // This is to record the the length of the variables defined here
 	startLabel = NewLabel(); // This is to record the address of the
 			                          // first instruction of program
-	bTable.setStartLabel(startLabel);
+	bTable.setStartLabel(procLabel);
 	admin.emit2("DEFADDR",procLabel);
 	admin.emit3("PROC",varLabel,startLabel);
-	block(startLabel,varLabel,stops);
+	block(startLabel,varLabel,0,stops);
 	admin.emit1("ENDPROC");
-
+	bTable.endBlock();
 }
 
 // typeSymbol = 'integer' | 'Boolean'
@@ -306,7 +324,7 @@ void Parser::variableList(PL_Type tempType,int& varListSize, vector<Symbol> stop
 
 		if(id != -1)
 		{
-				bool isDefined = bTable.define(id, VAR, tempType, 1, -1);
+				bool isDefined = bTable.define(id, VAR, tempType, 1, -1,varListSize+3);
 				varListSize++;
 				if(!isDefined)
 				{
@@ -399,7 +417,7 @@ void Parser::statement(vector<Symbol> stops)
 				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
 			}
 			//entry.disp is start label for procedure name
-			admin.emit3("CALL", entry.rbl, entry.disp);
+			admin.emit3("CALL", bTable.currentBlockLabel() -entry.bl, entry.disp);
 		}
 				
 	}
@@ -758,7 +776,7 @@ PL_Type Parser::simpleExpression(vector<Symbol> stops)
 	term(tempType,ff.firstOfAddOp() + stops,0,NONAME);
 
 	if(sym == MINUS)
-		admin.emit1("SUBSTRACT");
+		admin.emit1("SUBTRACT");
 		
 	if(in(ff.firstOfAddOp()))
 	{
@@ -809,7 +827,7 @@ void Parser::addopTerm(vector<Symbol> stops)
 		if(symb == PLUS)
 			admin.emit1("ADD");
 		else if(symb == MINUS)
-			admin.emit1("SUBSTRACT");
+			admin.emit1("SUBTRACT");
 
 		if(tempType != INTEGRAL)
 		{
@@ -981,7 +999,7 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 		}
 		else
 		{
-			admin.emit3("VARIABLE",entry.rbl,entry.disp);
+			admin.emit3("VARIABLE",bTable.currentBlockLabel() - entry.bl,entry.disp);
 		}
 
 		if(in(ff.firstOfIndexSel()))

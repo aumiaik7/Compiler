@@ -16,7 +16,7 @@ begin
 		end;
 		$i:=true;
 	end;
-	j:=n+6;
-	i:=1;
+	$j:=n;
+	$i:=1;
 	write i,j;
 end.	

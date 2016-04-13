@@ -1,0 +1,15 @@
+begin
+
+	integer i;
+
+	proc method1
+	begin
+		 
+		i := 3 + 2;
+		
+	end;
+        read i;
+	call method1;
+	write i;
+	
+end.

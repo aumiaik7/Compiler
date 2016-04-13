@@ -27,7 +27,7 @@ bool BlockTable::search(int idToLook)
 //an object with our current id. Otherwise it returns
 //false indicating ambiguous name i.e there are more
 //than one definition for the specific id
-bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nValue)
+bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nValue,int nDisp)
 {
 	if(!search(nID))
 	{
@@ -37,8 +37,8 @@ bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nV
 		myBlock[blockLevel][def].type = nType;
 		myBlock[blockLevel][def].size = nSize;
 		myBlock[blockLevel][def].value = nValue;
-		myBlock[blockLevel][def].rbl = blockLevel;
-		myBlock[blockLevel][def].disp = def + 3;
+		myBlock[blockLevel][def].bl = blockLevel;
+		myBlock[blockLevel][def].disp = nDisp;
 
 		def++;
 
@@ -98,4 +98,13 @@ void BlockTable::setArraySize(int defPosition, int size)
 	{
 		myBlock[blockLevel][i].size = size;
 	}
+}
+
+int BlockTable::currentBlockLabel()
+{
+	return blockLevel;
+}
+void BlockTable::endBlock()
+{
+	blockLevel--;
 }
