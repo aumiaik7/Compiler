@@ -6,7 +6,6 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc, BlockTable &bt)
 {
 	agc = false;
 	//First look ahead token	
-
 	lookAheadToken();
 }
 
@@ -16,7 +15,12 @@ Parser::Parser(ifstream &in, ofstream &out, Scanner &sc, BlockTable &bt)
   and terminal symbols are matched using match(Symbol,vector<Symbol>)
   method				
 */
-
+int Parser::parse()
+{
+	program(ENDOFFILE);
+	//after parsing return no of errors occured
+	return admin.getErrCount();
+}
 // program = block '.'
 void Parser::program(Symbol sym)
 {
@@ -31,7 +35,7 @@ void Parser::program(Symbol sym)
 	varLabel = NewLabel(); // This is to record the the length of the variables defined here
 
 	admin.emit3("PROG", varLabel, startLabel);
-	//outFile<<"program()"<<endl;
+
 	//non terminal bloc	
 	block(startLabel,varLabel,0,stopSet);
 	
@@ -51,14 +55,11 @@ void Parser::program(Symbol sym)
 // block = 'begin' definitionPart statementPart 'end'
 void Parser::block(int sLabel, int vLabel,int varLength, vector<Symbol> stops)
 {
-	//outFile<<"block()"<<endl;
-	
 	//new block in block table
 	if(!bTable.newBlock())
 	{
 		admin.fatal("Exceeded block limit");
 	}
-	//int varLength = 0; // total variable storage requirement
 	//this portion matches begin and if not matched the shows corresponding error message and finds the next stop symbol
 	match(BEGIN,ff.firstOfDefinition() + ff.firstOfStatement() + stops);
 	
@@ -68,26 +69,24 @@ void Parser::block(int sLabel, int vLabel,int varLength, vector<Symbol> stops)
 		vector<Symbol>().swap(stopSet);
 		stopSet.push_back(END);
 		
-		 // varLength is the value of “vLabel” and is determined in DefinitionPart
-		 definitionPart(varLength,ff.firstOfStatement() + stops + stopSet);
+		// varLength is the value of “vLabel” and is determined in DefinitionPart
+		definitionPart(varLength,ff.firstOfStatement() + stops + stopSet);
 
 
-		 // Define the labels used in PROC and PROG.
-		 // Output assembler instruction DEFARG to enter
-		 // labelTable[vLabel] = varLength in pass 1
-		 // so that varLength replaces varLabel in the final
-		 // code output in pass 2 of assembler
+		// Define the labels used in PROC and PROG.
+		// Output assembler instruction DEFARG to enter
+		// labelTable[vLabel] = varLength in pass 1
+		// so that varLength replaces varLabel in the final
+		// code output in pass 2 of assembler
+		admin.emit3("DEFARG", vLabel, varLength);
 
-		 admin.emit3("DEFARG", vLabel, varLength);
-
-		 // We are about to begin the first executable
-		 // instruction. So we can output assembler instruction
-		 // DEFADDR to enter
-		 // labelTable[startLabel] = address for next instruction
-		 // The assembler keeps track of the address of the instructions.
-
-		 admin.emit2("DEFADDR", sLabel);
-		 statementPart(stops + stopSet);
+		// We are about to begin the first executable
+		// instruction. So we can output assembler instruction
+		// DEFADDR to enter
+		// labelTable[startLabel] = address for next instruction
+		// The assembler keeps track of the address of the instructions.
+		admin.emit2("DEFADDR", sLabel);
+		statementPart(stops + stopSet);
 
 	}
 
@@ -98,21 +97,21 @@ void Parser::block(int sLabel, int vLabel,int varLength, vector<Symbol> stops)
 		stopSet.push_back(END);
 
 		// Define the labels used in PROC and PROG.
-		 // Output assembler instruction DEFARG to enter
-		 // labelTable[vLabel] = varLength in pass 1
-		 // so that varLength replaces varLabel in the final
-		 // code output in pass 2 of assembler
+		// Output assembler instruction DEFARG to enter
+		// labelTable[vLabel] = varLength in pass 1
+		// so that varLength replaces varLabel in the final
+		// code output in pass 2 of assembler
 
-		 admin.emit3("DEFARG", vLabel, varLength);
+		admin.emit3("DEFARG", vLabel, varLength);
 
-		 // We are about to begin the first executable
-		 // instruction. So we can output assembler instruction
-		 // DEFADDR to enter
-		 // labelTable[startLabel] = address for next instruction
-		 // The assembler keeps track of the address of the instructions.
-		 admin.emit2("DEFADDR", sLabel);
+		// We are about to begin the first executable
+		// instruction. So we can output assembler instruction
+		// DEFADDR to enter
+		// labelTable[startLabel] = address for next instruction
+		// The assembler keeps track of the address of the instructions.
+		admin.emit2("DEFADDR", sLabel);
 
-		 statementPart(stops + stopSet);
+		statementPart(stops + stopSet);
 	}
 	
 	//this portion matches end and if not matched the shows corresponding error message and finds the next stop symbol
@@ -122,9 +121,6 @@ void Parser::block(int sLabel, int vLabel,int varLength, vector<Symbol> stops)
 // definitionPart = {definition';'}
 void Parser::definitionPart(int& varLength,vector<Symbol> stops)
 {
-	
-	//outFile<<"definitionPart()"<<endl;
-	
 	if(in(ff.firstOfDefinition()))
 	{
 		vector<Symbol>().swap(stopSet);
@@ -135,37 +131,28 @@ void Parser::definitionPart(int& varLength,vector<Symbol> stops)
 	}
 	else
 		syntaxCheck(stops);
-	
-	//return varLength;
 }
 
 // definition = constantDefinition | variableDefinition | procedureDefinition
 void Parser::definition(int& varLength,vector<Symbol> stops)
 {
-	//outFile<<"definition()"<<endl;
-	
 	if(in(ff.firstOfConstDef()))
 	{
 		constantDefinition(stops);
-		//return 0+varLength;
 	}
 	else if(in(ff.firstOfVariDef()))
 	{
-		//return
 		variableDefinition(varLength,stops);
 	}
 	else if(in(ff.firstOfProcDef()))
 	{
 		procedureDefinition(varLength,stops);
-		//return 0 + varLength;
 	}
 }
 
 // constantDefinition = 'const' constName '='  constant;
 void Parser::constantDefinition(vector<Symbol> stops)
 {
-	//outFile<<"constantDefinition()"<<endl;
-	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(EQUAL);
 	
@@ -193,14 +180,11 @@ void Parser::constantDefinition(vector<Symbol> stops)
 
 		}
 	}
-
 }
 
 // variableDefinition = typeSymbol variableList | typeSymbol 'array' variableList'['constant']'
 void Parser::variableDefinition(int& varLength,vector<Symbol> stops)
 {
-	//outFile<<"variableDefinition()"<<endl;	
-	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ARRAY);
 	
@@ -209,7 +193,6 @@ void Parser::variableDefinition(int& varLength,vector<Symbol> stops)
 	if(in(ff.firstOfVariList()))
 	{
 		variableList(tempType,varLength,stops);
-		//return  varLength;
 	}
 	else if(lookAheadTok.getSymbol() == ARRAY)
 	{
@@ -246,14 +229,11 @@ void Parser::variableDefinition(int& varLength,vector<Symbol> stops)
 			admin.error(ScopeE,lookAheadTok.getSymbol(),2);
 		}
 	}
-	
 }
 
 // procedureDefinition = 'proc' procedureName block
 void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 {
-	//outFile<<"procedureDefinition()"<<endl;
-
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(BEGIN);
 	stopSet.push_back(ID);
@@ -264,7 +244,7 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 	
 	int id = matchName(ID, stopSet + stops);
 	
-		if(id != -1)
+	if(id != -1)
 	{
 		bool isDefined = bTable.define(id,PROCEDURE,INTEGRAL,0,1,0);
 		if(!isDefined)
@@ -272,7 +252,6 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 			//ambiguous name error
 			admin.error(ScopeE,lookAheadTok.getSymbol(),5);
 		}
-
 	}
 
 	int procLabel,startLabel, varLabel; //local variables to store forward reference labels
@@ -291,8 +270,6 @@ void Parser::procedureDefinition(int& varLength,vector<Symbol> stops)
 // typeSymbol = 'integer' | 'Boolean'
 PL_Type Parser::typeSymbol(vector<Symbol> stops)
 {
-	//outFile<<"typeSymbol()"<<endl;
-
 	if(lookAheadTok.getSymbol() == INT)
 	{
 		//nameType = INTEGRAL;
@@ -305,14 +282,11 @@ PL_Type Parser::typeSymbol(vector<Symbol> stops)
 		match(BOOL,stops);
 		return BOOLEAN;
 	}
-		
 }
 
 // variableList = variableName {','variableName}
 void Parser::variableList(PL_Type tempType,int& varListSize, vector<Symbol> stops)
 {
-	//outFile<<"variableList()"<<endl;
-	
 	if(lookAheadTok.getSymbol() == ID )	
 	{
 		//if(lookAheadTok.getIDtype() != 1)
@@ -343,15 +317,11 @@ void Parser::variableList(PL_Type tempType,int& varListSize, vector<Symbol> stop
 	{
 		syntaxCheck(stops - ID);
 	}
-	
-
 }
 
 // statementPart = {statement';'}
 void Parser::statementPart(vector<Symbol> stops)
 {
-	//outFile<<"statementPart()"<<endl;
-	
 	if(in(ff.firstOfStatement()))
 	{	
 		vector<Symbol>().swap(stopSet);	
@@ -367,14 +337,11 @@ void Parser::statementPart(vector<Symbol> stops)
 	}
 	else
 		syntaxCheck(stops);
-	
 }
 
 // statement = emptyStatement | readStatement | writeStatement |  assignmentStatement | ifStatement | doStatement 
 void Parser::statement(vector<Symbol> stops)
 {
-	//outFile<<"statement()"<<endl;
-		
 	if(in(ff.firstOfEmptySt()))
 	{
 		match(SKIP,stops);
@@ -416,10 +383,9 @@ void Parser::statement(vector<Symbol> stops)
 			{
 				admin.error(ScopeE,lookAheadTok.getSymbol(),3);
 			}
-			//entry.disp is start label for procedure name
+			//entry.disp is proc label for procedure name
 			admin.emit3("CALL", bTable.currentBlockLabel() -entry.bl, entry.disp);
 		}
-				
 	}
 	else if(in(ff.firstOfAssignSt()))
 	{
@@ -433,14 +399,11 @@ void Parser::statement(vector<Symbol> stops)
 	{
 		doStatement(stops);		
 	}
-	
 }
 
 // readStatement = 'read' variableAccessList
 void Parser::readStatement(vector<Symbol> stops)
 {
-	//outFile<<"readStatement()"<<endl;
-	
 	match(READ, ff.firstOfVAList() + stops);
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
@@ -451,8 +414,6 @@ void Parser::readStatement(vector<Symbol> stops)
 // variableAccessList = variableAccess{','variableAccess}
 void Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type>& varTypeList)
 {
-	//outFile<<"variableAccessList()"<<endl;
-
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(COMMA);
 	stopSet.push_back(ID);
@@ -478,25 +439,19 @@ void Parser::variableAccessList(vector<Symbol> stops, vector<PL_Type>& varTypeLi
 // writeStatement = 'write' expressionList  
 void Parser::writeStatement(vector<Symbol> stops)
 {
-	//outFile<<"writeStatement()"<<endl;
-	
 	match(WRITE, ff.firstOfExpList() + stops);
 	vector<PL_Type> typeList;
 	vector<PL_Type>().swap(typeList);
 	expressionList(stops,typeList);
 
 	admin.emit2("WRITE",typeList.size());
-
 }
 
 // expressionList = expression {','expression}
 void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 {
-	//outFile<<"expressionList()"<<endl;
-	
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(COMMA);
-
 
 	PL_Type tempType = expression(stopSet + stops,0,NONAME);
 	typeList.push_back(tempType);
@@ -510,14 +465,11 @@ void  Parser::expressionList(vector<Symbol> stops, vector<PL_Type>& typeList)
 	{
 		syntaxCheck(stops - ID);
 	}
-		
 }
 
 // assignmentStatement = variableAccessList ':=' expressionList
 void Parser::assignmentStatement(vector<Symbol> stops)
 {
-	//outFile<<"assignmentStatement()"<<endl;
-
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(ASSIGN);
 	
@@ -547,29 +499,27 @@ void Parser::assignmentStatement(vector<Symbol> stops)
 // ifStatement = 'if' guardedCommandList 'fi' 
 void Parser::ifStatement(vector<Symbol> stops)
 {
-	//outFile<<"ifStatement()"<<endl;
-
 	int startLabel = NewLabel();// label of the instructions if the the boolean expression
     							// evaluates to false
-	int doneLabel = NewLabel();  // label of the instruction immediately after code for if instruction
+	int doneLabel = NewLabel(); // label of the instruction immediately after code for if instruction
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(FI);
 	
 	match(IF, ff.firstOfGCList() + stops);
 	guardedCommandList(startLabel,doneLabel,stopSet + stops);
+
 	admin.emit2("DEFADDR", startLabel);  // If we have a runtime error; address of the FI instruction is known
 	// Add the FI command.
 	admin.emit2("FI", admin.lineNo);
 	 // Define the address to jump to on successful completion of the command.
 	admin.emit2("DEFADDR", doneLabel); //The if-instruction is a success, doneLabel is the address of the next instruction.
+
 	match(FI,stops);	
 }
 
 // doStatement = 'do' guardedCommandList 'od'
 void Parser::doStatement(vector<Symbol> stops)
 {
-	//outFile<<"doStatement()"<<endl;
-
 	match(DO, ff.firstOfGCList() + stops);
 
 	vector<Symbol>().swap(stopSet);
@@ -578,7 +528,9 @@ void Parser::doStatement(vector<Symbol> stops)
 	int loopLabel = NewLabel();
 	// Emit the label to loop back to.
 	admin.emit2("DEFADDR", loopLabel);
+
 	guardedCommandList(startLabel,loopLabel,stopSet + stops);
+
 	// Emit the label that exits from the loop.
 	admin.emit2("DEFADDR", startLabel);
 	match(OD,stops);
@@ -616,6 +568,7 @@ void Parser::guardedCommand(int& thisLabel, int goTo,vector<Symbol> stops)
 {
 	//outFile<<"guardedCommand()"<<endl;
 	admin.emit2("DEFADDR", thisLabel);
+
 	vector<Symbol>().swap(stopSet);
 	stopSet.push_back(GC2);	
 	stopSet.push_back(RIGHTBRACKET);
@@ -624,10 +577,13 @@ void Parser::guardedCommand(int& thisLabel, int goTo,vector<Symbol> stops)
 	agc = true;
 	PL_Type tempType = expression(stopSet + ff.firstOfStatement() + stops,0,NONAME);
 	agc = false;
+
 	thisLabel = NewLabel();
 	admin.emit2("ARROW", thisLabel);
+
 	match(GC2, ff.firstOfStatement() + stops);
 	statementPart(stops);
+
 	admin.emit2("BAR", goTo);
 }
 
@@ -638,6 +594,7 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag,Symbol sym)
 	
 	PL_Type tempType = primaryExpression(ff.firstOfPrimOp() + stops);
 
+	//emit in postfix fashion
 	if(sym == AND)
 		admin.emit1("AND");
 	else if(sym == OR)
@@ -662,7 +619,6 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag,Symbol sym)
 		Symbol symb = lookAheadTok.getSymbol();
 		primaryOperator(ff.firstOfExpList() + stops);
 		expression(stops,1,symb);
-		//return tempType;
 	}
 	else if(agc)
 	{
@@ -679,8 +635,6 @@ PL_Type Parser::expression(vector<Symbol> stops,int flag,Symbol sym)
 // primaryOperator = '&' | '|'
 void Parser::primaryOperator(vector<Symbol> stops)
 {
-	//outFile<<"primaryOperator()"<<endl;
-		
 	if(lookAheadTok.getSymbol() == AND)
 	{
 		match(AND,stops);		
@@ -689,15 +643,12 @@ void Parser::primaryOperator(vector<Symbol> stops)
 	{
 		match(OR,stops);
 	}
-	
 }
 
 // primaryExpression = simpleExpression [relationalOperator simpleExpression]
 PL_Type Parser::primaryExpression(vector<Symbol> stops)
 {
-	//outFile<<"primaryExpression()"<<endl;	
 	PL_Type tempType = simpleExpression(ff.firstOfRelOp() + stops);
-	
 	
 	if(in(ff.firstOfRelOp()))
 	{
@@ -736,8 +687,6 @@ PL_Type Parser::primaryExpression(vector<Symbol> stops)
 // relationalOperator = '<' | '=' | '>'	
 void Parser::relationalOperator(vector<Symbol> stops)
 {
-	//outFile<<"relationalOperator()"<<endl;
-
 	if(lookAheadTok.getSymbol() == LESST)
 	{
 		match(LESST,stops);		
@@ -758,13 +707,11 @@ void Parser::relationalOperator(vector<Symbol> stops)
 	{
 		match(GTE,stops);
 	}
-
 }
 
 // simpleExpression = ['-'] term {addingOperator term}
 PL_Type Parser::simpleExpression(vector<Symbol> stops)
 {
-	//outFile<<"simpleExpression()"<<endl;
 	Symbol sym = NONAME;
 	if(lookAheadTok.getSymbol() == MINUS)
 	{
@@ -802,8 +749,6 @@ PL_Type Parser::simpleExpression(vector<Symbol> stops)
 // addingOperator = '+' | '-'
 void Parser::addingOperator(vector<Symbol> stops)
 {
-	//outFile<<"addingOperator()"<<endl;
-
 	if(lookAheadTok.getSymbol() == PLUS)
 	{
 		match(PLUS,stops);		
@@ -840,9 +785,6 @@ void Parser::addopTerm(vector<Symbol> stops)
 // term = factor {multiplyingOperator factor}
 void Parser::term(PL_Type& tempType,vector<Symbol> stops,int flag, Symbol sym)
 {
-	//outFile<<"term()"<<endl;
-
-
 	tempType = factor(ff.firstOfMultOp() + stops);
 
 	if(sym == TIMES)
@@ -851,7 +793,6 @@ void Parser::term(PL_Type& tempType,vector<Symbol> stops,int flag, Symbol sym)
 		admin.emit1("DIVIDE");
 	else if(sym == MOD)
 		admin.emit1("MODULO");
-
 
 	//flag = 1 means Multiplying operator is parsed so the
 	//type of factor is expected to be integral
@@ -881,25 +822,20 @@ void Parser::term(PL_Type& tempType,vector<Symbol> stops,int flag, Symbol sym)
 	else if(in(ff.followOfExpression()))
 	{
 		syntaxCheck(stops);
-		//return tempType;
 	}
 	else if(agc)
 	{
 		syntaxCheck(stops);
-		//return tempType;
 	}
 	else
 	{
 		syntaxCheck(stops - ID);
-		//return tempType;
 	}
 }
 
 // multiplyingOperator = '*' | '/' | '\'
  void Parser::multiplyingOperator(vector<Symbol> stops)
 {
-	//outFile<<"multiplyingOperator()"<<endl;
-
 	if(lookAheadTok.getSymbol() == TIMES)
 	{
 		match(TIMES,stops);
@@ -917,8 +853,6 @@ void Parser::term(PL_Type& tempType,vector<Symbol> stops,int flag, Symbol sym)
 //factor = constant | variableAccess | '('expression')' | '~' factor	
 PL_Type Parser::factor(vector<Symbol> stops)
 {
-	//outFile<<"factor()"<<endl;
-	
 	if(lookAheadTok.getSymbol() == ID)
 	{
 
@@ -929,25 +863,28 @@ PL_Type Parser::factor(vector<Symbol> stops)
 			int tempValue;
 			PL_Type tempType;
 			constant(tempValue, tempType, stops);
+
 			admin.emit2("CONSTANT",tempValue);
+
 			return tempType;
 		}
 		else
 		{
 			PL_Type tempType = variableAccess(stops);
+
 			admin.emit1("VALUE");
+
 			return tempType;
 		}
-
-
-
 	}
 	else if(in(ff.firstOfConstant()))
 	{
 		int tempValue;
 		PL_Type tempType;
 		constant(tempValue, tempType, stops);
+
 		admin.emit2("CONSTANT",tempValue);
+
 		return tempType;
 	}
 	else if(lookAheadTok.getSymbol() == LEFTP)
@@ -959,14 +896,13 @@ PL_Type Parser::factor(vector<Symbol> stops)
 		PL_Type tempType = expression(stopSet + stops,0,NONAME);
 		match(RIGHTP,stops);
 
-		//admin.emit1("INDEX");
-
 		return tempType;
 	}
 	else if(lookAheadTok.getSymbol() == NOT)
 	{
 		match(NOT, ff.firstOfFactor() + stops);
 		factor(stops);	
+
 		admin.emit1("NOT");
 	}
 	else if(in(ff.followOfExpression()))
@@ -980,8 +916,6 @@ PL_Type Parser::factor(vector<Symbol> stops)
 //variableAccess = variableName [indexSelector]
 PL_Type Parser::variableAccess(vector<Symbol> stops)
 {
-	//outFile<<"variableAccess()"<<endl;	
-
 	//look for the variable Name in block table
 	int id = matchName(ID, stops);
 	if(id != -1)
@@ -1014,8 +948,10 @@ PL_Type Parser::variableAccess(vector<Symbol> stops)
 			match(LEFTBRACKET, stopSet + ff.firstOfExpList() + stops);
 			PL_Type tempType = expression(stopSet + stops,0,NONAME);
 			match(RIGHTBRACKET,stops);
+
 			// INDEX instruction emits the line number should the index be out-of-range
 			admin.emit3("INDEX", entry.size, admin.lineNo);
+
 			return tempType;
 		}
 		else if(agc)
@@ -1090,11 +1026,9 @@ void Parser::constant(int& tempValue, PL_Type& tempType, vector<Symbol> stops)
 	}	
 }
 
-
 //this function is used to match terminal symbols of CFG
 bool Parser::match(Symbol sym , vector<Symbol> stops)
 {
-	
 	//it means the token is matched returns true
 	if(lookAheadTok.getSymbol() == sym)
 	{
@@ -1129,7 +1063,6 @@ bool Parser::match(Symbol sym , vector<Symbol> stops)
 	}
 	//check whether the look ahead symbol is valid or not
 	syntaxCheck(stops);
-	
 }
 
 //this function is used to match name symbols of CFG
@@ -1145,7 +1078,6 @@ int Parser::matchName(Symbol sym , vector<Symbol> stops)
 		while(1)
 		{
 			lookAheadTok = scanner.nextToken();
-
 			//newline detected
 			if(lookAheadTok.getSymbol() == NEWLINE)
 			{
@@ -1174,7 +1106,6 @@ int Parser::matchName(Symbol sym , vector<Symbol> stops)
 	//check whether the look ahead symbol is valid or not
 	syntaxCheck(stops);
 	return temp;
-
 }
 
 void Parser::lookAheadToken()
@@ -1207,7 +1138,6 @@ void Parser::lookAheadToken()
 //Syntex Error recovery
 //when any error occured we try find the next possible valid
 //symbol (stop symbol) that can occur after the error.
-
 void Parser::syntaxError(vector<Symbol> stops)
 {
 	//continue to grab token until any stop symbol is found
@@ -1272,7 +1202,6 @@ bool Parser::in(vector<Symbol> set)
 			return true;
 		}
 	}
-	
 	return false;
 }
 

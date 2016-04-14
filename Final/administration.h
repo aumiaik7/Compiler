@@ -47,8 +47,12 @@ class Administration
 	int lineNo;
 	// Error function for the phases
 	void error(errorkind , Symbol, int);
+	//fatal error
+	void fatal(string);
 	//function for error count
 	void ErrorCount();	
+	//get number of errors
+	int getErrCount();
 	// call scanner from here
 	int scan();
 	//either valid or invalid token 
@@ -62,7 +66,8 @@ class Administration
 	void emit1(string);
 	void emit2(string,int);
 	void emit3(string,int, int);
-	void fatal(string);
+
+
 
 		
 };

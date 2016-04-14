@@ -18,13 +18,12 @@ typedef struct
 	PL_Type type;
 	int size;
 	int value;
-	int bl; //block level
-	int disp; // displacement
+	int bl;  //block level
+	int disp;// displacement
 }TableEntry;
 
 class BlockTable
 {
-
 	private:
 	//keeps track of the current block
 	int blockLevel;
@@ -49,11 +48,11 @@ class BlockTable
 	//an object with our current id. Otherwise it returns
 	//false indicating ambiguous name i.e there are more 
 	//than one definition for the specific id 
-	bool define(int, PL_Kind, PL_Type, int, int,int);
+	bool define(int,PL_Kind,PL_Type,int,int,int);
 	//error is false if the id we are looking for is in
 	//the block table. Search all blocks in the block table
 	//error is true if not found in the blocktable
-	TableEntry find(int, bool &);
+	TableEntry find(int,bool&);
 	//new block
 	bool newBlock();
 	//setSize for Arrays

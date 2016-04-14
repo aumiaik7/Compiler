@@ -40,12 +40,6 @@ class Parser
 	int errorCount;
 	//get token from scan() function	
 	Token lookAheadTok;
-	//temporary Name token
-	//Token nameTok;
-	//temporary name value
-	//int nameValue;
-	//temporary name Type
-	//PL_Type nameType;
 	//keep track wheather nextTok is currect or look ahead token
 	bool islookAheadTok;
 	//Stop symbols holder
@@ -142,6 +136,8 @@ class Parser
 	void syntaxCheck(vector<Symbol>);
 	//keep track whether token is current token or look ahead token
 	void lookAheadToken();
+	//Parsing starts here
+	int parse();
 
 	//new label and new label genereator
 	int label;
@@ -151,8 +147,6 @@ class Parser
 		
 };
 vector<PL_Type> operator+(vector<PL_Type> , PL_Type);
-//vector<Symbol> operator+(vector<Symbol> set1, vector<Symbol> set2);
-//vector<Symbol> operator+(vector<Symbol> stops, Symbol sym);
 
 #endif
 

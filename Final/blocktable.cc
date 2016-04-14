@@ -27,7 +27,7 @@ bool BlockTable::search(int idToLook)
 //an object with our current id. Otherwise it returns
 //false indicating ambiguous name i.e there are more
 //than one definition for the specific id
-bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nValue,int nDisp)
+bool BlockTable::define(int nID, PL_Kind nKind, PL_Type nType, int nSize, int nValue, int nDisp)
 {
 	if(!search(nID))
 	{

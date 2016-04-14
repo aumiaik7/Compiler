@@ -1,4 +1,4 @@
-$ A program to compute the nth fibonacci number. The sequence goes 1, 1, 2, 3, 5, 8, 11, .... Demonstrates  
+$ A program to compute the nth fibonacci number. The sequence goes 1, 1, 2, 3, 5, 8, 13, .... Demonstrates  
 $ support for recursion  in PL language. 
 begin 
 	integer temp; 
@@ -15,7 +15,7 @@ begin
 		       call fib; 
 		       z := temp; 
 		       temp := y + z; 
-	       []  ~(temp > 0) -> skip; 
+	       []  ~(temp > 1) -> skip; 
 	       fi; 
 	end; 
 read temp; 

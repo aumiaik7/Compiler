@@ -1,6 +1,4 @@
 #include "administration.h"
-#include "Assembler.h"
-#include "interp.h"
 
 
 const string Administration::terminals[TERMINALS] = { "id","num","bad num","bad name", "bad symbol", "badchar", "newline", "no name", "end of file", ".", ",", ";", "[", "]", "&", "|", "~", "<", "=", ">", "<=", ">=", "+", "-", "*", "/", "\\", ")", "(", ":=", "[]", "->", "begin", "end", "const", "array", "integer", "Boolean", "proc", "skip", "read", "write", "call", "if", "do", "fi", "od", "false", "true"};
@@ -106,6 +104,10 @@ void Administration::ErrorCount()
 		exit(0);
 	}
 	
+}
+int Administration:: getErrCount()
+{
+	return errorCount;
 }
 
 //checks wheather the token is valid or not. if valid then returns true
@@ -213,29 +215,13 @@ void Administration::emit3(string mneomonic,int varLabel,int startLabel)
 void Administration::fatal(string message)
 {
 	cerr<<message<<endl;
+	exit(0);
 }
 //Completion message
 void Administration::done()
 {
-	cout<<endl<<"<<<Type, Scope checking and Parsing Done>>>"<<endl;
-	cout<<"The methods called for nonterminals are showed in ParserOutFile "<<endl;
+	cout<<endl<<"<<<Compilation Done>>>"<<endl;
 	cout<<"Total no of lines Parsed: "<<lineNo<<endl;
 	outFile.close();
-
-	if(errorCount == 0)
-	{
-		//source file object
-		ifstream inFile;
-		//output file object
-		ofstream otFile;
-		inFile.open("Code");
-		otFile.open("FinalOP");
-		Assembler assembler(inFile,otFile);
-		assembler.firstPass();
-		assembler.secondPass();
-
-		Interpreter interpreter("FinalOP",false);
-	}
-
 }
 
